@@ -7,6 +7,9 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { AppLayout } from "@/components/AppLayout";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import MasterDirectorates from "./pages/MasterDirectorates";
+import MasterDivisions from "./pages/MasterDivisions";
+import MasterUsers from "./pages/MasterUsers";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,6 +26,9 @@ const App = () => (
             <Route path="/" element={<AppLayout />}>
               <Route index element={<Navigate to="/dashboard" replace />} />
               <Route path="dashboard" element={<Dashboard />} />
+              <Route path="master/directorates" element={<MasterDirectorates />} />
+              <Route path="master/divisions" element={<MasterDivisions />} />
+              <Route path="master/users" element={<MasterUsers />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
