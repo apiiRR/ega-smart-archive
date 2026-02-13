@@ -12,6 +12,8 @@ import MasterDivisions from "./pages/MasterDivisions";
 import MasterUsers from "./pages/MasterUsers";
 import SuratMasuk from "./pages/SuratMasuk";
 import SuratKeluar from "./pages/SuratKeluar";
+import Disposisi from "./pages/Disposisi";
+import TemplateSurat from "./pages/TemplateSurat";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,6 +35,8 @@ const App = () => (
               <Route path="master/users" element={<MasterUsers />} />
               <Route path="surat-masuk" element={<SuratMasuk />} />
               <Route path="surat-keluar" element={<SuratKeluar />} />
+              <Route path="disposisi" element={<Disposisi />} />
+              <Route path="template-surat" element={<TemplateSurat />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
