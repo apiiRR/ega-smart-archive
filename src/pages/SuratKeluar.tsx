@@ -18,7 +18,7 @@ import {
 import { Eye, ArrowLeft, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { id as idLocale } from "date-fns/locale";
+import { id as idLocale } from "date-fns/locale/id";
 import type { Tables, Enums } from "@/integrations/supabase/types";
 
 type SuratKeluarRow = Tables<"surat_keluar">;
