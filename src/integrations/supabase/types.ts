@@ -80,6 +80,71 @@ export type Database = {
         }
         Relationships: []
       }
+      dispositions: {
+        Row: {
+          catatan: string
+          created_at: string
+          from_user_id: string
+          id: string
+          parent_id: string | null
+          surat_keluar_id: string | null
+          surat_masuk_id: string | null
+          to_division_id: string
+          to_user_id: string | null
+        }
+        Insert: {
+          catatan: string
+          created_at?: string
+          from_user_id: string
+          id?: string
+          parent_id?: string | null
+          surat_keluar_id?: string | null
+          surat_masuk_id?: string | null
+          to_division_id: string
+          to_user_id?: string | null
+        }
+        Update: {
+          catatan?: string
+          created_at?: string
+          from_user_id?: string
+          id?: string
+          parent_id?: string | null
+          surat_keluar_id?: string | null
+          surat_masuk_id?: string | null
+          to_division_id?: string
+          to_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dispositions_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "dispositions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dispositions_surat_keluar_id_fkey"
+            columns: ["surat_keluar_id"]
+            isOneToOne: false
+            referencedRelation: "surat_keluar"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dispositions_surat_masuk_id_fkey"
+            columns: ["surat_masuk_id"]
+            isOneToOne: false
+            referencedRelation: "surat_masuk"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dispositions_to_division_id_fkey"
+            columns: ["to_division_id"]
+            isOneToOne: false
+            referencedRelation: "divisions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       divisions: {
         Row: {
           created_at: string
@@ -114,6 +179,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      letter_templates: {
+        Row: {
+          category: string | null
+          content: string
+          created_at: string
+          created_by: string | null
+          dynamic_fields: Json | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          dynamic_fields?: Json | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          dynamic_fields?: Json | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       menus: {
         Row: {
@@ -276,6 +374,101 @@ export type Database = {
         }
         Relationships: []
       }
+      surat_keluar: {
+        Row: {
+          approved_by: string | null
+          created_at: string
+          created_by: string
+          file_url: string | null
+          id: string
+          isi_surat: string | null
+          nama_surat: string
+          nomor_surat: string
+          perihal: string
+          status: Database["public"]["Enums"]["surat_keluar_status"]
+          template_id: string | null
+          tujuan: string
+          updated_at: string
+        }
+        Insert: {
+          approved_by?: string | null
+          created_at?: string
+          created_by: string
+          file_url?: string | null
+          id?: string
+          isi_surat?: string | null
+          nama_surat: string
+          nomor_surat: string
+          perihal: string
+          status?: Database["public"]["Enums"]["surat_keluar_status"]
+          template_id?: string | null
+          tujuan: string
+          updated_at?: string
+        }
+        Update: {
+          approved_by?: string | null
+          created_at?: string
+          created_by?: string
+          file_url?: string | null
+          id?: string
+          isi_surat?: string | null
+          nama_surat?: string
+          nomor_surat?: string
+          perihal?: string
+          status?: Database["public"]["Enums"]["surat_keluar_status"]
+          template_id?: string | null
+          tujuan?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "surat_keluar_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "letter_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      surat_masuk: {
+        Row: {
+          asal_surat: string
+          catatan: string | null
+          created_at: string
+          created_by: string
+          file_url: string | null
+          id: string
+          nama_surat: string
+          nomor_surat: string
+          status: Database["public"]["Enums"]["surat_masuk_status"]
+          updated_at: string
+        }
+        Insert: {
+          asal_surat: string
+          catatan?: string | null
+          created_at?: string
+          created_by: string
+          file_url?: string | null
+          id?: string
+          nama_surat: string
+          nomor_surat: string
+          status?: Database["public"]["Enums"]["surat_masuk_status"]
+          updated_at?: string
+        }
+        Update: {
+          asal_surat?: string
+          catatan?: string | null
+          created_at?: string
+          created_by?: string
+          file_url?: string | null
+          id?: string
+          nama_surat?: string
+          nomor_surat?: string
+          status?: Database["public"]["Enums"]["surat_masuk_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -332,6 +525,19 @@ export type Database = {
         | "direktur"
         | "general_manager"
         | "pegawai"
+      surat_keluar_status:
+        | "draft"
+        | "dikirim"
+        | "direvisi"
+        | "disetujui"
+        | "ditolak"
+        | "arsip"
+      surat_masuk_status:
+        | "baru"
+        | "didisposisikan"
+        | "dibalas"
+        | "selesai"
+        | "arsip"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -465,6 +671,21 @@ export const Constants = {
         "direktur",
         "general_manager",
         "pegawai",
+      ],
+      surat_keluar_status: [
+        "draft",
+        "dikirim",
+        "direvisi",
+        "disetujui",
+        "ditolak",
+        "arsip",
+      ],
+      surat_masuk_status: [
+        "baru",
+        "didisposisikan",
+        "dibalas",
+        "selesai",
+        "arsip",
       ],
     },
   },
