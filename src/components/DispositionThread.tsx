@@ -11,7 +11,7 @@ import {
 import { MessageSquare, Send, ArrowRight, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { id as idLocale } from "date-fns/locale";
+import { id as idLocale } from "date-fns/locale/id";
 
 interface DispositionThreadProps {
   suratMasukId?: string;
