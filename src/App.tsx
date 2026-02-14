@@ -14,6 +14,7 @@ import SuratMasuk from "./pages/SuratMasuk";
 import SuratKeluar from "./pages/SuratKeluar";
 import Disposisi from "./pages/Disposisi";
 import TemplateSurat from "./pages/TemplateSurat";
+import Rbac from "./pages/Rbac";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,6 +38,7 @@ const App = () => (
               <Route path="surat-keluar" element={<SuratKeluar />} />
               <Route path="disposisi" element={<Disposisi />} />
               <Route path="template-surat" element={<TemplateSurat />} />
+              <Route path="rbac" element={<Rbac />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
