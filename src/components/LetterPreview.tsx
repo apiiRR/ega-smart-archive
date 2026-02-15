@@ -1,4 +1,5 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
+import DOMPurify from "dompurify";
 
 interface LetterPreviewProps {
   content: string;
@@ -11,6 +12,13 @@ export function LetterPreview({ content, templateName }: LetterPreviewProps) {
     /\{\{([^}]+)\}\}/g,
     '<span class="inline-block bg-amber-100 text-amber-800 rounded px-1 text-xs font-mono border border-amber-300">{{$1}}</span>'
   );
+
+  // Sanitize HTML to prevent XSS attacks
+  const sanitized = DOMPurify.sanitize(rendered, {
+    ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'span', 'div', 'h1', 'h2', 'h3', 'h4', 'ul', 'ol', 'li', 'blockquote', 'a', 'table', 'thead', 'tbody', 'tr', 'td', 'th'],
+    ALLOWED_ATTR: ['class', 'style', 'href', 'target', 'rel'],
+    ALLOW_DATA_ATTR: false,
+  });
 
   return (
     <ScrollArea className="h-[700px]">
@@ -45,7 +53,7 @@ export function LetterPreview({ content, templateName }: LetterPreviewProps) {
           <div
             className="prose prose-sm max-w-none"
             style={{ fontSize: "12pt" }}
-            dangerouslySetInnerHTML={{ __html: rendered || '<p class="text-gray-400 italic">Isi template akan ditampilkan di sini...</p>' }}
+            dangerouslySetInnerHTML={{ __html: sanitized || '<p class="text-gray-400 italic">Isi template akan ditampilkan di sini...</p>' }}
           />
 
           {/* Footer space for signature */}
