@@ -75,8 +75,7 @@ export default function SuratKeluar() {
         const path = `surat-keluar/${Date.now()}.${ext}`;
         const { error: upErr } = await supabase.storage.from("letter-attachments").upload(path, file);
         if (upErr) throw upErr;
-        const { data: urlData } = supabase.storage.from("letter-attachments").getPublicUrl(path);
-        file_url = urlData.publicUrl;
+        file_url = path;
       }
       const { error } = await supabase.from("surat_keluar").insert({
         ...form,
@@ -153,10 +152,22 @@ export default function SuratKeluar() {
 
           {detail.file_url && (
             <div>
-              <a href={detail.file_url} target="_blank" rel="noopener noreferrer"
-                className="text-sm text-primary hover:underline inline-flex items-center gap-1">
+              <Button
+                variant="link"
+                className="text-sm text-primary hover:underline inline-flex items-center gap-1 p-0 h-auto"
+                onClick={async () => {
+                  const { data, error } = await supabase.storage
+                    .from("letter-attachments")
+                    .createSignedUrl(detail.file_url!, 3600);
+                  if (error || !data?.signedUrl) {
+                    toast.error("Gagal membuka lampiran");
+                    return;
+                  }
+                  window.open(data.signedUrl, "_blank");
+                }}
+              >
                 <Upload className="h-3 w-3" /> Lihat Lampiran
-              </a>
+              </Button>
             </div>
           )}
 
