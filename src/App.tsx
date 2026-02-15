@@ -15,6 +15,7 @@ import SuratKeluar from "./pages/SuratKeluar";
 import Disposisi from "./pages/Disposisi";
 import TemplateSurat from "./pages/TemplateSurat";
 import Rbac from "./pages/Rbac";
+import AuditLog from "./pages/AuditLog";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -39,6 +40,7 @@ const App = () => (
               <Route path="disposisi" element={<Disposisi />} />
               <Route path="template-surat" element={<TemplateSurat />} />
               <Route path="rbac" element={<Rbac />} />
+              <Route path="audit-log" element={<AuditLog />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
