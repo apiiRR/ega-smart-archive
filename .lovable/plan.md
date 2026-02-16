@@ -1,112 +1,143 @@
 
+# Rencana: Restrukturisasi Menu & Fitur Surat Internal Perusahaan
 
-# 🏛️ MyEGA – My Enterprise Governance Archive
-### Aplikasi Manajemen Surat Menyurat Digital PT Berdikari
+## Ringkasan Perubahan
 
-**Status**: Fase 1 - Fondasi (Login, RBAC, Layout, Dashboard) ✅ SELESAI
-
----
-
-## Fase 1: Fondasi — Autentikasi & RBAC
-
-### 1.1 Login & Autentikasi
-- Halaman login dengan email & password
-- Session management & redirect berdasarkan role
-- Desain clean & professional dengan branding PT Berdikari
-
-### 1.2 Sistem RBAC (Role Based Access Control)
-- Tabel roles, permissions, dan menu akses di Supabase
-- Admin dapat membuat role baru dan mengatur:
-  - Menu yang bisa diakses per role
-  - Aksi per menu (create, read, update, delete, approve, dispose)
-  - Scope data (misal: hanya data divisi sendiri)
-- Sidebar navigasi dinamis sesuai role user yang login
-
-### 1.3 Layout Utama & Dashboard
-- Sidebar navigasi responsif
-- Header dengan info user & logout
-- Dashboard ringkasan (jumlah surat masuk/keluar, pending disposisi)
+Proyek ini akan direstrukturisasi menjadi 3 perubahan besar:
+1. Hapus kolom "kategori" dari Template Surat
+2. Reorganisasi menu sidebar menjadi grup "Buat Surat" dan "Kotak Masuk"
+3. Buat fitur baru "Surat Internal Perusahaan" dengan mode manual/template, multi-tujuan, dan tebusan
 
 ---
 
-## Fase 2: Master Data
+## 1. Hapus Kategori dari Template Surat
 
-### 2.1 Master Direktorat
-- CRUD Direktorat (Nama Direktorat, Nama Direktur)
-- Tabel dengan pencarian & pagination
-
-### 2.2 Master Divisi
-- CRUD Divisi (Nama Divisi, General Manager, relasi ke Direktorat)
-- Dropdown relasi ke Direktorat & User
-
-### 2.3 Master User
-- CRUD User (Nama, Email, NIP, Divisi, Role)
-- Password terenkripsi via Supabase Auth
-- User hanya melihat data sesuai hak akses (RLS)
+- Hapus kolom `category` dari tabel `letter_templates` via migrasi database
+- Hapus dropdown kategori dan badge kategori dari halaman `TemplateSurat.tsx`
+- Hapus array `CATEGORIES` dari kode
 
 ---
 
-## Fase 3: Surat Masuk & Surat Keluar
+## 2. Reorganisasi Menu Sidebar
 
-### 3.1 Surat Masuk (Eksternal)
-- Form input: Nama surat, Nomor surat, Asal surat, Catatan
-- Upload scan surat (Supabase Storage)
-- Disposisi ke satu atau lebih divisi
-- Status workflow: Baru → Didisposisikan → Dibalas → Selesai → Arsip
-- Histori disposisi lengkap
+### Struktur Menu Baru:
 
-### 3.2 Surat Keluar (Internal/Outgoing)
-- Pilih template → Isi data → Draft → Kirim
-- Status workflow: Draft → Dikirim → Direvisi → Disetujui/Ditolak → Arsip
-- Aksi revisi, pengembalian, dan persetujuan
+```text
+BUAT SURAT
+  - Surat Masuk (eksternal, catat surat dari luar)
+  - Surat Keluar (eksternal, buat surat keluar)  
+  - Surat Internal (buat surat antar divisi/direktorat)
 
-### 3.3 Disposisi Dua Arah (Threaded)
-- Disposisi dari A ke B dan balasan dari B ke A
-- Tampilan threaded mirip chat berbasis surat
-- Setiap disposisi: pengirim, penerima, catatan, timestamp
-- Riwayat disposisi tidak bisa dihapus (immutable)
+KOTAK MASUK
+  - Surat Masuk Internal (surat internal yang ditujukan ke divisi user)
+  - Tebusan Surat (surat di mana divisi user ada di daftar tebusan)
+  - Disposisi (disposisi yang ditujukan ke divisi user)
 
----
+MASTER DATA (tetap)
+PENGATURAN (tetap)
+```
 
-## Fase 4: Template Surat & WYSIWYG Editor
+### Perubahan Database (tabel `menus`):
+- Update menu yang ada dan tambah menu baru: `surat_internal`, `inbox_internal`, `inbox_tebusan`
+- Tambah permission untuk menu baru
+- Tambah role_permissions untuk super_admin
 
-### 4.1 Template Surat dengan Live Preview
-- Layout split view:
-  - **Kiri**: Form input (nama template, field dinamis, konten WYSIWYG)
-  - **Kanan**: Live preview format A4 dengan kop surat PT Berdikari
-- Field dinamis (bisa ditambah/dikurangi)
-- WYSIWYG editor untuk konten surat
-- Template dapat digunakan ulang saat membuat surat keluar
+### Perubahan Sidebar (`AppSidebar.tsx`):
+- Sesuaikan logika pengelompokan menu berdasarkan path prefix baru
 
 ---
 
-## Fase 5: Audit Trail & Logging
+## 3. Tabel Baru: `surat_internal`
 
-### 5.1 Logging Komprehensif
-- Pencatatan otomatis semua aktivitas:
-  - Login/Logout
-  - CRUD data master
-  - Perubahan surat & status
-  - Disposisi & approval
-- Log mencatat: siapa, apa, kapan, dari state mana ke state mana
-- Log bersifat immutable (tidak bisa diubah/dihapus)
+### Skema Database:
 
-### 5.2 Halaman Audit Trail (Admin)
-- Tabel log dengan filter: tanggal, user, modul
-- Detail setiap entry audit
-- Export data audit
+| Kolom | Tipe | Keterangan |
+|-------|------|------------|
+| id | uuid | Primary key |
+| nomor_surat | text | Nomor surat |
+| nama_surat | text | Judul surat |
+| perihal | text | Perihal |
+| isi_surat | text | Konten HTML (manual atau dari template) |
+| template_id | uuid, nullable | Referensi ke template yang digunakan |
+| tujuan | jsonb | Array ID divisi/direktorat tujuan |
+| tebusan | jsonb | Array ID divisi/direktorat tebusan (CC) |
+| file_url | text, nullable | Lampiran |
+| created_by | uuid | Pembuat |
+| status | document_status | draft / confirm |
+| created_at | timestamptz | |
+| updated_at | timestamptz | |
+
+### RLS Policies:
+- **SELECT**: Admin lihat semua. Pegawai lihat jika: pembuat, divisi sama, divisi ada di tujuan, atau divisi ada di tebusan
+- **INSERT**: `auth.uid() = created_by`
+- **UPDATE/DELETE**: Hanya jika `status = 'draft'` dan (pembuat atau admin)
 
 ---
 
-## Desain & UX
-- **Gaya**: Clean & Professional — warna netral, tipografi jelas, whitespace yang cukup
-- **Branding**: Logo & kop surat PT Berdikari akan diintegrasikan ke template surat dan header aplikasi
-- **Responsif**: Optimal di desktop, fungsional di tablet
-- **Navigasi**: Sidebar dengan menu dinamis sesuai RBAC
+## 4. Halaman Baru: Surat Internal (`SuratInternal.tsx`)
 
-## Teknologi
-- **Frontend**: React + TypeScript + Tailwind CSS + shadcn/ui
-- **Backend**: Supabase (Auth, Database, Storage, RLS, Edge Functions)
-- **State Management**: TanStack React Query
-- **WYSIWYG**: Rich text editor library (TipTap atau serupa)
+### Alur Pembuatan:
+1. User klik "Buat Surat Internal"
+2. Dialog muncul dengan pilihan: **Manual** atau **Dari Template**
+3. **Mode Manual**: Form seperti Surat Keluar (nomor, nama, perihal, isi teks/editor, tujuan, tebusan, lampiran)
+4. **Mode Template**: 
+   - Pilih template dari dropdown
+   - Form field dinamis otomatis muncul berdasarkan placeholder `{{...}}` di template
+   - User mengisi field, lalu konten template di-replace otomatis
+5. **Tujuan**: Multi-select dropdown gabungan Divisi + Direktorat
+6. **Tebusan**: Multi-select dropdown gabungan Divisi + Direktorat
+7. Simpan sebagai draft
 
+### Halaman Detail:
+- Tampilkan detail surat internal + status badge
+- Tombol Konfirmasi jika masih draft
+- Thread disposisi (reuse `DispositionThread` component dengan prop baru `suratInternalId`)
+
+---
+
+## 5. Halaman Baru: Kotak Masuk Internal (`InboxInternal.tsx`)
+
+- Menampilkan surat internal di mana divisi user ada di array `tujuan`
+- Super admin melihat semua
+- Tampilan daftar dengan detail view
+
+## 6. Halaman Baru: Tebusan Surat (`InboxTebusan.tsx`)
+
+- Menampilkan surat internal di mana divisi user ada di array `tebusan`
+- Super admin melihat semua
+- Read-only view (tidak bisa edit/hapus)
+
+---
+
+## 7. Update DispositionThread
+
+- Tambah prop `suratInternalId` agar disposisi bisa dilampirkan ke surat internal
+- Tambah kolom `surat_internal_id` ke tabel `dispositions`
+
+---
+
+## Detail Teknis
+
+### Migrasi Database (1 migrasi):
+1. Hapus kolom `category` dari `letter_templates`
+2. Buat tabel `surat_internal` dengan RLS policies
+3. Tambah kolom `surat_internal_id` ke `dispositions`
+4. Update menus dan permissions
+
+### File Baru:
+- `src/pages/SuratInternal.tsx` - Halaman buat & kelola surat internal
+- `src/pages/InboxInternal.tsx` - Kotak masuk surat internal
+- `src/pages/InboxTebusan.tsx` - Daftar tebusan/CC surat
+
+### File Diubah:
+- `src/pages/TemplateSurat.tsx` - Hapus kategori
+- `src/components/AppSidebar.tsx` - Reorganisasi grup menu
+- `src/components/DispositionThread.tsx` - Tambah support surat internal
+- `src/App.tsx` - Tambah route baru
+- `src/hooks/useMenuPermissions.ts` - Sesuaikan jika perlu
+
+### Data Menu Baru (INSERT ke tabel menus):
+- `surat_internal` | "Surat Internal" | `/surat-internal` | icon: FileText | sort: 5
+- `inbox_internal` | "Surat Masuk Internal" | `/inbox/internal` | icon: Inbox | sort: 6  
+- `inbox_tebusan` | "Tebusan Surat" | `/inbox/tebusan` | icon: ArrowRightLeft | sort: 7
+- Disposisi dipindah ke sort: 8, path tetap `/disposisi`
