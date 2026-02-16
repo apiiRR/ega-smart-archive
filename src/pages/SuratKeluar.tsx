@@ -12,9 +12,6 @@ import { Badge } from "@/components/ui/badge";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
 import { Eye, ArrowLeft, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -22,24 +19,16 @@ import { id as idLocale } from "date-fns/locale/id";
 import type { Tables, Enums } from "@/integrations/supabase/types";
 
 type SuratKeluarRow = Tables<"surat_keluar">;
-type Status = Enums<"surat_keluar_status">;
+type Status = Enums<"document_status">;
 
 const statusColors: Record<Status, string> = {
-  draft: "bg-gray-100 text-gray-800",
-  dikirim: "bg-blue-100 text-blue-800",
-  direvisi: "bg-yellow-100 text-yellow-800",
-  disetujui: "bg-green-100 text-green-800",
-  ditolak: "bg-red-100 text-red-800",
-  arsip: "bg-gray-200 text-gray-600",
+  draft: "bg-yellow-100 text-yellow-800",
+  confirm: "bg-green-100 text-green-800",
 };
 
 const statusLabels: Record<Status, string> = {
   draft: "Draft",
-  dikirim: "Dikirim",
-  direvisi: "Direvisi",
-  disetujui: "Disetujui",
-  ditolak: "Ditolak",
-  arsip: "Arsip",
+  confirm: "Dikonfirmasi",
 };
 
 export default function SuratKeluar() {
@@ -171,20 +160,28 @@ export default function SuratKeluar() {
             </div>
           )}
 
-          {/* Status update */}
-          <div className="flex items-center gap-3 pt-2 border-t">
-            <Label className="text-sm">Ubah Status:</Label>
-            <Select value={detail.status} onValueChange={(v) => updateStatus.mutate({ id: detail.id, status: v as Status })}>
-              <SelectTrigger className="w-48">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {(Object.keys(statusLabels) as Status[]).map(s => (
-                  <SelectItem key={s} value={s}>{statusLabels[s]}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {/* Confirm action */}
+          {detail.status === "draft" && (
+            <div className="flex items-center gap-3 pt-2 border-t">
+              <Button
+                variant="default"
+                onClick={() => updateStatus.mutate({ id: detail.id, status: "confirm" as Status })}
+                disabled={updateStatus.isPending}
+              >
+                {updateStatus.isPending ? "Mengonfirmasi..." : "Konfirmasi Surat"}
+              </Button>
+              <span className="text-xs text-muted-foreground">
+                Setelah dikonfirmasi, surat tidak dapat diedit atau dihapus.
+              </span>
+            </div>
+          )}
+          {detail.status === "confirm" && (
+            <div className="pt-2 border-t">
+              <p className="text-sm text-muted-foreground italic">
+                Surat ini sudah dikonfirmasi dan tidak dapat diubah.
+              </p>
+            </div>
+          )}
         </div>
 
         <DispositionThread suratKeluarId={detail.id} />
