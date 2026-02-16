@@ -88,6 +88,7 @@ export type Database = {
           id: string
           parent_id: string | null
           status: Database["public"]["Enums"]["document_status"]
+          surat_internal_id: string | null
           surat_keluar_id: string | null
           surat_masuk_id: string | null
           to_division_id: string
@@ -100,6 +101,7 @@ export type Database = {
           id?: string
           parent_id?: string | null
           status?: Database["public"]["Enums"]["document_status"]
+          surat_internal_id?: string | null
           surat_keluar_id?: string | null
           surat_masuk_id?: string | null
           to_division_id: string
@@ -112,6 +114,7 @@ export type Database = {
           id?: string
           parent_id?: string | null
           status?: Database["public"]["Enums"]["document_status"]
+          surat_internal_id?: string | null
           surat_keluar_id?: string | null
           surat_masuk_id?: string | null
           to_division_id?: string
@@ -123,6 +126,13 @@ export type Database = {
             columns: ["parent_id"]
             isOneToOne: false
             referencedRelation: "dispositions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dispositions_surat_internal_id_fkey"
+            columns: ["surat_internal_id"]
+            isOneToOne: false
+            referencedRelation: "surat_internal"
             referencedColumns: ["id"]
           },
           {
@@ -185,7 +195,6 @@ export type Database = {
       }
       letter_templates: {
         Row: {
-          category: string | null
           content: string
           created_at: string
           created_by: string | null
@@ -195,7 +204,6 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          category?: string | null
           content?: string
           created_at?: string
           created_by?: string | null
@@ -205,7 +213,6 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          category?: string | null
           content?: string
           created_at?: string
           created_by?: string | null
@@ -376,6 +383,62 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      surat_internal: {
+        Row: {
+          created_at: string
+          created_by: string
+          file_url: string | null
+          id: string
+          isi_surat: string | null
+          nama_surat: string
+          nomor_surat: string
+          perihal: string
+          status: Database["public"]["Enums"]["document_status"]
+          tebusan: Json
+          template_id: string | null
+          tujuan: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          file_url?: string | null
+          id?: string
+          isi_surat?: string | null
+          nama_surat: string
+          nomor_surat: string
+          perihal: string
+          status?: Database["public"]["Enums"]["document_status"]
+          tebusan?: Json
+          template_id?: string | null
+          tujuan?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          file_url?: string | null
+          id?: string
+          isi_surat?: string | null
+          nama_surat?: string
+          nomor_surat?: string
+          perihal?: string
+          status?: Database["public"]["Enums"]["document_status"]
+          tebusan?: Json
+          template_id?: string | null
+          tujuan?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "surat_internal_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "letter_templates"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       surat_keluar: {
         Row: {
