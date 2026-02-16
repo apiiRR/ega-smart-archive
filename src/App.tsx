@@ -12,6 +12,9 @@ import MasterDivisions from "./pages/MasterDivisions";
 import MasterUsers from "./pages/MasterUsers";
 import SuratMasuk from "./pages/SuratMasuk";
 import SuratKeluar from "./pages/SuratKeluar";
+import SuratInternal from "./pages/SuratInternal";
+import InboxInternal from "./pages/InboxInternal";
+import InboxTebusan from "./pages/InboxTebusan";
 import Disposisi from "./pages/Disposisi";
 import TemplateSurat from "./pages/TemplateSurat";
 import Rbac from "./pages/Rbac";
@@ -37,6 +40,9 @@ const App = () => (
               <Route path="master/users" element={<MasterUsers />} />
               <Route path="surat-masuk" element={<SuratMasuk />} />
               <Route path="surat-keluar" element={<SuratKeluar />} />
+              <Route path="surat-internal" element={<SuratInternal />} />
+              <Route path="inbox/internal" element={<InboxInternal />} />
+              <Route path="inbox/tebusan" element={<InboxTebusan />} />
               <Route path="disposisi" element={<Disposisi />} />
               <Route path="template-surat" element={<TemplateSurat />} />
               <Route path="rbac" element={<Rbac />} />

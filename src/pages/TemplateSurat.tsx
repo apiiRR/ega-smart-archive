@@ -8,12 +8,8 @@ import { LetterPreview } from "@/components/LetterPreview";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
@@ -27,15 +23,6 @@ import type { Tables } from "@/integrations/supabase/types";
 
 type Template = Tables<"letter_templates">;
 
-const CATEGORIES = [
-  "Surat Undangan",
-  "Surat Keputusan",
-  "Surat Perintah",
-  "Surat Pemberitahuan",
-  "Surat Keterangan",
-  "Memo Internal",
-  "Lain-lain",
-];
 
 export default function TemplateSurat() {
   const { user } = useAuth();
@@ -43,7 +30,7 @@ export default function TemplateSurat() {
   const [mode, setMode] = useState<"list" | "editor">("list");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [form, setForm] = useState({ name: "", category: "", content: "" });
+  const [form, setForm] = useState({ name: "", content: "" });
   const [editorTab, setEditorTab] = useState("edit");
 
   const { data: templates = [], isLoading } = useQuery({
@@ -66,7 +53,7 @@ export default function TemplateSurat() {
       if (editingId) {
         const { error } = await supabase
           .from("letter_templates")
-          .update({ name: form.name, category: form.category || null, content: form.content })
+          .update({ name: form.name, content: form.content })
           .eq("id", editingId);
         if (error) throw error;
       } else {
@@ -74,7 +61,6 @@ export default function TemplateSurat() {
           .from("letter_templates")
           .insert({
             name: form.name,
-            category: form.category || null,
             content: form.content,
             created_by: user?.id,
           });
@@ -104,14 +90,14 @@ export default function TemplateSurat() {
 
   const openNew = () => {
     setEditingId(null);
-    setForm({ name: "", category: "", content: "" });
+    setForm({ name: "", content: "" });
     setEditorTab("edit");
     setMode("editor");
   };
 
   const openEdit = (t: Template) => {
     setEditingId(t.id);
-    setForm({ name: t.name, category: t.category || "", content: t.content });
+    setForm({ name: t.name, content: t.content });
     setEditorTab("edit");
     setMode("editor");
   };
@@ -139,26 +125,13 @@ export default function TemplateSurat() {
         </div>
 
         {/* Form fields */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label>Nama Template</Label>
-            <Input
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="Contoh: Surat Undangan Rapat"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Kategori</Label>
-            <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
-              <SelectTrigger><SelectValue placeholder="Pilih kategori" /></SelectTrigger>
-              <SelectContent>
-                {CATEGORIES.map((c) => (
-                  <SelectItem key={c} value={c}>{c}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+        <div className="space-y-2">
+          <Label>Nama Template</Label>
+          <Input
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+            placeholder="Contoh: Surat Undangan Rapat"
+          />
         </div>
 
         {/* Tabs: Editor & Preview */}
@@ -211,20 +184,9 @@ export default function TemplateSurat() {
         data={templates}
         isLoading={isLoading}
         searchPlaceholder="Cari template..."
-        searchKeys={["name", "category"]}
-        onAdd={openNew}
-        addLabel="Buat Template"
+        searchKeys={["name"]}
         columns={[
           { key: "name", label: "Nama Template" },
-          {
-            key: "category",
-            label: "Kategori",
-            render: (row) => row.category ? (
-              <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20">
-                {row.category}
-              </Badge>
-            ) : <span className="text-muted-foreground">-</span>,
-          },
           {
             key: "created_at",
             label: "Dibuat",

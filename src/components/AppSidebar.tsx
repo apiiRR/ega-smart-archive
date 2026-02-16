@@ -33,9 +33,16 @@ export function AppSidebar() {
   const { profile, signOut } = useAuth();
   const { data: menus = [] } = useMenuPermissions();
 
-  const mainMenus = menus.filter(m => !m.menu_path.startsWith("/master/") && m.menu_name !== "rbac" && m.menu_name !== "audit_log");
-  const masterMenus = menus.filter(m => m.menu_path.startsWith("/master/"));
-  const settingMenus = menus.filter(m => m.menu_name === "rbac" || m.menu_name === "audit_log");
+  const buatSuratNames = ["surat_masuk", "surat_keluar", "surat_internal"];
+  const kotakMasukNames = ["inbox_internal", "inbox_tebusan", "disposisi"];
+  const masterNames = ["master_direktorat", "master_divisi", "master_user"];
+  const settingNames = ["rbac", "audit_log"];
+  const dashboardMenus = menus.filter(m => m.menu_name === "dashboard");
+  const buatSuratMenus = menus.filter(m => buatSuratNames.includes(m.menu_name));
+  const kotakMasukMenus = menus.filter(m => kotakMasukNames.includes(m.menu_name));
+  const templateMenus = menus.filter(m => m.menu_name === "template_surat");
+  const masterMenus = menus.filter(m => masterNames.includes(m.menu_name));
+  const settingMenus = menus.filter(m => settingNames.includes(m.menu_name));
 
   const renderMenuItem = (item: typeof menus[0]) => {
     const Icon = iconMap[item.menu_icon] || LayoutDashboard;
@@ -72,13 +79,40 @@ export function AppSidebar() {
       <SidebarSeparator />
 
       <SidebarContent>
-        {mainMenus.length > 0 && (
+        {dashboardMenus.length > 0 && (
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu>{dashboardMenus.map(renderMenuItem)}</SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
+        {buatSuratMenus.length > 0 && (
           <SidebarGroup>
             <SidebarGroupLabel className="text-sidebar-foreground/50 text-[10px] uppercase tracking-wider">
-              Menu Utama
+              Buat Surat
             </SidebarGroupLabel>
             <SidebarGroupContent>
-              <SidebarMenu>{mainMenus.map(renderMenuItem)}</SidebarMenu>
+              <SidebarMenu>{buatSuratMenus.map(renderMenuItem)}</SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
+        {kotakMasukMenus.length > 0 && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-sidebar-foreground/50 text-[10px] uppercase tracking-wider">
+              Kotak Masuk
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>{kotakMasukMenus.map(renderMenuItem)}</SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
+        {templateMenus.length > 0 && (
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu>{templateMenus.map(renderMenuItem)}</SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
         )}

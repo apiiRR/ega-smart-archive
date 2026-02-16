@@ -17,6 +17,7 @@ import { id as idLocale } from "date-fns/locale/id";
 interface DispositionThreadProps {
   suratMasukId?: string;
   suratKeluarId?: string;
+  suratInternalId?: string;
 }
 
 interface Disposition {
@@ -29,10 +30,11 @@ interface Disposition {
   parent_id: string | null;
   surat_masuk_id: string | null;
   surat_keluar_id: string | null;
+  surat_internal_id: string | null;
   status: "draft" | "confirm";
 }
 
-export function DispositionThread({ suratMasukId, suratKeluarId }: DispositionThreadProps) {
+export function DispositionThread({ suratMasukId, suratKeluarId, suratInternalId }: DispositionThreadProps) {
   const { user } = useAuth();
   const qc = useQueryClient();
   const [catatan, setCatatan] = useState("");
@@ -60,13 +62,14 @@ export function DispositionThread({ suratMasukId, suratKeluarId }: DispositionTh
   const profileMap = Object.fromEntries(profiles.map(p => [p.id, p.name]));
   const divisionMap = Object.fromEntries(divisions.map(d => [d.id, d.name]));
 
-  const queryKey = ["dispositions", suratMasukId, suratKeluarId];
+  const queryKey = ["dispositions", suratMasukId, suratKeluarId, suratInternalId];
   const { data: dispositions = [], isLoading } = useQuery({
     queryKey,
     queryFn: async () => {
       let q = supabase.from("dispositions").select("*").order("created_at", { ascending: true });
       if (suratMasukId) q = q.eq("surat_masuk_id", suratMasukId);
       if (suratKeluarId) q = q.eq("surat_keluar_id", suratKeluarId);
+      if (suratInternalId) q = q.eq("surat_internal_id", suratInternalId);
       const { data, error } = await q;
       if (error) throw error;
       return data as Disposition[];
@@ -84,6 +87,7 @@ export function DispositionThread({ suratMasukId, suratKeluarId }: DispositionTh
       };
       if (suratMasukId) payload.surat_masuk_id = suratMasukId;
       if (suratKeluarId) payload.surat_keluar_id = suratKeluarId;
+      if (suratInternalId) payload.surat_internal_id = suratInternalId;
       const { error } = await supabase.from("dispositions").insert(payload);
       if (error) throw error;
     },
