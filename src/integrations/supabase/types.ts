@@ -87,6 +87,7 @@ export type Database = {
           from_user_id: string
           id: string
           parent_id: string | null
+          status: Database["public"]["Enums"]["document_status"]
           surat_keluar_id: string | null
           surat_masuk_id: string | null
           to_division_id: string
@@ -98,6 +99,7 @@ export type Database = {
           from_user_id: string
           id?: string
           parent_id?: string | null
+          status?: Database["public"]["Enums"]["document_status"]
           surat_keluar_id?: string | null
           surat_masuk_id?: string | null
           to_division_id: string
@@ -109,6 +111,7 @@ export type Database = {
           from_user_id?: string
           id?: string
           parent_id?: string | null
+          status?: Database["public"]["Enums"]["document_status"]
           surat_keluar_id?: string | null
           surat_masuk_id?: string | null
           to_division_id?: string
@@ -385,7 +388,7 @@ export type Database = {
           nama_surat: string
           nomor_surat: string
           perihal: string
-          status: Database["public"]["Enums"]["surat_keluar_status"]
+          status: Database["public"]["Enums"]["document_status"]
           template_id: string | null
           tujuan: string
           updated_at: string
@@ -400,7 +403,7 @@ export type Database = {
           nama_surat: string
           nomor_surat: string
           perihal: string
-          status?: Database["public"]["Enums"]["surat_keluar_status"]
+          status?: Database["public"]["Enums"]["document_status"]
           template_id?: string | null
           tujuan: string
           updated_at?: string
@@ -415,7 +418,7 @@ export type Database = {
           nama_surat?: string
           nomor_surat?: string
           perihal?: string
-          status?: Database["public"]["Enums"]["surat_keluar_status"]
+          status?: Database["public"]["Enums"]["document_status"]
           template_id?: string | null
           tujuan?: string
           updated_at?: string
@@ -440,7 +443,7 @@ export type Database = {
           id: string
           nama_surat: string
           nomor_surat: string
-          status: Database["public"]["Enums"]["surat_masuk_status"]
+          status: Database["public"]["Enums"]["document_status"]
           updated_at: string
         }
         Insert: {
@@ -452,7 +455,7 @@ export type Database = {
           id?: string
           nama_surat: string
           nomor_surat: string
-          status?: Database["public"]["Enums"]["surat_masuk_status"]
+          status?: Database["public"]["Enums"]["document_status"]
           updated_at?: string
         }
         Update: {
@@ -464,7 +467,7 @@ export type Database = {
           id?: string
           nama_surat?: string
           nomor_surat?: string
-          status?: Database["public"]["Enums"]["surat_masuk_status"]
+          status?: Database["public"]["Enums"]["document_status"]
           updated_at?: string
         }
         Relationships: []
@@ -525,19 +528,7 @@ export type Database = {
         | "direktur"
         | "general_manager"
         | "pegawai"
-      surat_keluar_status:
-        | "draft"
-        | "dikirim"
-        | "direvisi"
-        | "disetujui"
-        | "ditolak"
-        | "arsip"
-      surat_masuk_status:
-        | "baru"
-        | "didisposisikan"
-        | "dibalas"
-        | "selesai"
-        | "arsip"
+      document_status: "draft" | "confirm"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -672,21 +663,7 @@ export const Constants = {
         "general_manager",
         "pegawai",
       ],
-      surat_keluar_status: [
-        "draft",
-        "dikirim",
-        "direvisi",
-        "disetujui",
-        "ditolak",
-        "arsip",
-      ],
-      surat_masuk_status: [
-        "baru",
-        "didisposisikan",
-        "dibalas",
-        "selesai",
-        "arsip",
-      ],
+      document_status: ["draft", "confirm"],
     },
   },
 } as const
