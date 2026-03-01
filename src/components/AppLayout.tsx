@@ -28,7 +28,7 @@ export function AppLayout() {
             <SidebarTrigger className="mr-4" />
             <div className="flex-1" />
             <span className="text-sm text-muted-foreground">
-              {profile?.name || user.email}
+              {profile?.name || profile?.username || user.email}
             </span>
           </header>
           <main className="flex-1 p-6 overflow-auto">
