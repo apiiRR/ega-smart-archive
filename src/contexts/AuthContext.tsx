@@ -1,12 +1,12 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
 
 interface UserProfile {
   id: string;
   name: string;
   email: string;
+  username: string | null;
   nip: string | null;
   division_id: string | null;
   avatar_url: string | null;
@@ -18,7 +18,6 @@ interface AuthContextType {
   profile: UserProfile | null;
   roles: string[];
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   hasRole: (role: string) => boolean;
   isAdmin: boolean;
@@ -81,11 +80,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return { error: error as Error | null };
-  };
-
   const signOut = async () => {
     await supabase.auth.signOut();
     setUser(null);
@@ -98,7 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isAdmin = roles.includes("super_admin") || roles.includes("admin");
 
   return (
-    <AuthContext.Provider value={{ user, session, profile, roles, loading, signIn, signOut, hasRole, isAdmin }}>
+    <AuthContext.Provider value={{ user, session, profile, roles, loading, signOut, hasRole, isAdmin }}>
       {children}
     </AuthContext.Provider>
   );

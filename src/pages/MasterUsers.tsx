@@ -12,11 +12,7 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
-import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Plus } from "lucide-react";
 import { toast } from "sonner";
 import type { Tables, Enums } from "@/integrations/supabase/types";
 
@@ -41,9 +37,11 @@ const roleBadgeColor: Record<string, string> = {
 export default function MasterUsers() {
   const qc = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [editing, setEditing] = useState<Profile | null>(null);
-  const [form, setForm] = useState({ name: "", email: "", nip: "", division_id: "", role: "pegawai" as Enums<"app_role">, password: "" });
+  const [form, setForm] = useState({
+    name: "", email: "", username: "", nip: "", division_id: "",
+    role: "pegawai" as Enums<"app_role">, password: "",
+  });
 
   const { data = [], isLoading } = useQuery({
     queryKey: ["users-master"],
@@ -54,7 +52,6 @@ export default function MasterUsers() {
         .order("name");
       if (error) throw error;
 
-      // Fetch all user_roles
       const { data: allRoles } = await supabase.from("user_roles").select("user_id, role");
       const roleMap: Record<string, string[]> = {};
       (allRoles || []).forEach((r) => {
@@ -78,43 +75,66 @@ export default function MasterUsers() {
     },
   });
 
+  const createUser = useMutation({
+    mutationFn: async () => {
+      if (!form.username || !form.name || !form.password) {
+        throw new Error("Username, nama, dan password wajib diisi");
+      }
+      const { data, error } = await supabase.functions.invoke("create-user", {
+        body: {
+          username: form.username,
+          name: form.name,
+          email: form.email || undefined,
+          password: form.password,
+          nip: form.nip || undefined,
+          division_id: form.division_id || undefined,
+          role: form.role,
+        },
+      });
+      if (error) throw new Error(error.message);
+      if (data?.error) throw new Error(data.error);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["users-master"] });
+      toast.success("User berhasil ditambahkan");
+      closeDialog();
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
   const saveProfile = useMutation({
     mutationFn: async () => {
-      if (editing) {
-        // Update profile
-        const { error } = await supabase.from("profiles").update({
-          name: form.name, nip: form.nip || null, division_id: form.division_id || null,
-        }).eq("id", editing.id);
-        if (error) throw error;
+      if (!editing) return;
+      const { error } = await supabase.from("profiles").update({
+        name: form.name, nip: form.nip || null, division_id: form.division_id || null,
+        username: form.username || null,
+      }).eq("id", editing.id);
+      if (error) throw error;
 
-        // Update role: delete existing, insert new
-        await supabase.from("user_roles").delete().eq("user_id", editing.id);
-        const { error: roleErr } = await supabase.from("user_roles").insert({ user_id: editing.id, role: form.role });
-        if (roleErr) throw roleErr;
-      } else {
-        // Create user via edge function or direct sign up not possible from client
-        // We'll create the auth user via supabase admin — but since we can't from client,
-        // we use supabase.auth.signUp which requires the user to confirm email.
-        // For admin-created users, we'll use an edge function approach.
-        toast.error("Untuk menambah user baru, gunakan halaman registrasi atau hubungi Super Admin.");
-        throw new Error("Cannot create user from client");
-      }
+      await supabase.from("user_roles").delete().eq("user_id", editing.id);
+      const { error: roleErr } = await supabase.from("user_roles").insert({ user_id: editing.id, role: form.role });
+      if (roleErr) throw roleErr;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["users-master"] });
       toast.success("User berhasil diperbarui");
       closeDialog();
     },
-    onError: (e: any) => {
-      if (e.message !== "Cannot create user from client") toast.error(e.message);
-    },
+    onError: (e: any) => toast.error(e.message),
   });
+
+  const openAdd = () => {
+    setEditing(null);
+    setForm({ name: "", email: "", username: "", nip: "", division_id: "", role: "pegawai", password: "" });
+    setDialogOpen(true);
+  };
 
   const openEdit = (row: Profile) => {
     setEditing(row);
     setForm({
       name: row.name,
       email: row.email,
+      username: (row as any).username || "",
       nip: row.nip || "",
       division_id: row.division_id || "",
       role: (row.roles?.[0] as Enums<"app_role">) || "pegawai",
@@ -122,7 +142,11 @@ export default function MasterUsers() {
     });
     setDialogOpen(true);
   };
+
   const closeDialog = () => { setDialogOpen(false); setEditing(null); };
+
+  const isCreating = !editing;
+  const isSaving = isCreating ? createUser.isPending : saveProfile.isPending;
 
   return (
     <div className="space-y-6">
@@ -136,8 +160,11 @@ export default function MasterUsers() {
         isLoading={isLoading}
         searchPlaceholder="Cari nama atau email..."
         searchKeys={["name", "email", "nip"]}
+        onAdd={openAdd}
+        addLabel="Tambah User"
         columns={[
           { key: "name", label: "Nama" },
+          { key: "username" as any, label: "Username", render: (row) => (row as any).username || "-" },
           { key: "email", label: "Email" },
           { key: "nip", label: "NIP", render: (row) => row.nip || "-" },
           { key: "division", label: "Divisi", render: (row) => row.division?.name || "-" },
@@ -165,17 +192,45 @@ export default function MasterUsers() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit User</DialogTitle>
+            <DialogTitle>{isCreating ? "Tambah User Baru" : "Edit User"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label>Username</Label>
+              <Input
+                value={form.username}
+                onChange={(e) => setForm({ ...form, username: e.target.value })}
+                placeholder="Username untuk login"
+                disabled={!!editing}
+              />
+            </div>
             <div className="space-y-2">
               <Label>Nama</Label>
               <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
             </div>
-            <div className="space-y-2">
-              <Label>Email</Label>
-              <Input value={form.email} disabled className="opacity-60" />
-            </div>
+            {isCreating && (
+              <>
+                <div className="space-y-2">
+                  <Label>Email (opsional)</Label>
+                  <Input
+                    value={form.email}
+                    onChange={(e) => setForm({ ...form, email: e.target.value })}
+                    placeholder="email@example.com"
+                    type="email"
+                  />
+                  <p className="text-xs text-muted-foreground">Kosongkan jika tidak ada email, akan dibuatkan otomatis.</p>
+                </div>
+                <div className="space-y-2">
+                  <Label>Password</Label>
+                  <Input
+                    value={form.password}
+                    onChange={(e) => setForm({ ...form, password: e.target.value })}
+                    type="password"
+                    placeholder="Min. 6 karakter"
+                  />
+                </div>
+              </>
+            )}
             <div className="space-y-2">
               <Label>NIP</Label>
               <Input value={form.nip} onChange={(e) => setForm({ ...form, nip: e.target.value })} placeholder="Nomor Induk Pegawai" />
@@ -205,8 +260,11 @@ export default function MasterUsers() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={closeDialog}>Batal</Button>
-            <Button onClick={() => saveProfile.mutate()} disabled={!form.name || saveProfile.isPending}>
-              {saveProfile.isPending ? "Menyimpan..." : "Simpan"}
+            <Button
+              onClick={() => isCreating ? createUser.mutate() : saveProfile.mutate()}
+              disabled={(!form.name || !form.username) || isSaving}
+            >
+              {isSaving ? "Menyimpan..." : isCreating ? "Tambah User" : "Simpan"}
             </Button>
           </DialogFooter>
         </DialogContent>
