@@ -149,7 +149,8 @@ export default function SuratInternal() {
     },
   });
 
-  const orgMap = Object.fromEntries(orgUnits.map(o => [o.id, o.name]));
+  const safeOrgUnits = Array.isArray(orgUnits) ? orgUnits : [];
+  const orgMap = Object.fromEntries(safeOrgUnits.map(o => [o.id, o.name]));
 
   const detail = items.find(s => s.id === detailId);
 
