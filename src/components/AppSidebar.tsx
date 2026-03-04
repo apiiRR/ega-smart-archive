@@ -2,6 +2,8 @@ import { Building2, LayoutDashboard, Inbox, Send, ArrowRightLeft, FileText, User
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMenuPermissions } from "@/hooks/useMenuPermissions";
+import { useSidebarCounts } from "@/hooks/useSidebarCounts";
+import { Badge } from "@/components/ui/badge";
 import {
   Sidebar,
   SidebarContent,
@@ -32,6 +34,7 @@ const iconMap: Record<string, React.ComponentType<any>> = {
 export function AppSidebar() {
   const { profile, signOut } = useAuth();
   const { data: menus = [] } = useMenuPermissions();
+  const { data: counts } = useSidebarCounts();
 
   const buatSuratNames = ["surat_masuk", "surat_keluar", "surat_internal"];
   const kotakMasukNames = ["inbox_internal", "inbox_tebusan", "disposisi"];
@@ -44,8 +47,17 @@ export function AppSidebar() {
   const masterMenus = menus.filter(m => masterNames.includes(m.menu_name));
   const settingMenus = menus.filter(m => settingNames.includes(m.menu_name));
 
+  // Map menu_name to draft count
+  const badgeMap: Record<string, number> = {
+    surat_masuk: counts?.surat_masuk ?? 0,
+    surat_keluar: counts?.surat_keluar ?? 0,
+    surat_internal: counts?.surat_internal ?? 0,
+    disposisi: counts?.disposisi ?? 0,
+  };
+
   const renderMenuItem = (item: typeof menus[0]) => {
     const Icon = iconMap[item.menu_icon] || LayoutDashboard;
+    const count = badgeMap[item.menu_name] ?? 0;
     return (
       <SidebarMenuItem key={item.menu_name}>
         <SidebarMenuButton asChild>
@@ -55,7 +67,15 @@ export function AppSidebar() {
             activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
           >
             <Icon className="h-4 w-4 shrink-0" />
-            <span>{item.menu_label}</span>
+            <span className="flex-1">{item.menu_label}</span>
+            {count > 0 && (
+              <Badge
+                variant="destructive"
+                className="ml-auto h-5 min-w-5 px-1.5 text-[10px] font-bold rounded-full flex items-center justify-center"
+              >
+                {count > 99 ? "99+" : count}
+              </Badge>
+            )}
           </NavLink>
         </SidebarMenuButton>
       </SidebarMenuItem>
