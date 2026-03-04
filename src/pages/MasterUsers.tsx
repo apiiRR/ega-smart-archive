@@ -12,7 +12,14 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
-import { Pencil, Plus } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Pencil, Plus, Trash2, KeyRound, MoreHorizontal } from "lucide-react";
 import { toast } from "sonner";
 import type { Tables, Enums } from "@/integrations/supabase/types";
 
@@ -42,6 +49,13 @@ export default function MasterUsers() {
     name: "", email: "", username: "", nip: "", division_id: "",
     role: "pegawai" as Enums<"app_role">, password: "",
   });
+
+  // Delete state
+  const [deleteTarget, setDeleteTarget] = useState<Profile | null>(null);
+
+  // Reset password state
+  const [resetTarget, setResetTarget] = useState<Profile | null>(null);
+  const [newPassword, setNewPassword] = useState("");
 
   const { data = [], isLoading } = useQuery({
     queryKey: ["users-master"],
@@ -82,12 +96,9 @@ export default function MasterUsers() {
       }
       const { data, error } = await supabase.functions.invoke("create-user", {
         body: {
-          username: form.username,
-          name: form.name,
-          email: form.email || undefined,
-          password: form.password,
-          nip: form.nip || undefined,
-          division_id: form.division_id || undefined,
+          username: form.username, name: form.name,
+          email: form.email || undefined, password: form.password,
+          nip: form.nip || undefined, division_id: form.division_id || undefined,
           role: form.role,
         },
       });
@@ -123,6 +134,38 @@ export default function MasterUsers() {
     onError: (e: any) => toast.error(e.message),
   });
 
+  const deleteUser = useMutation({
+    mutationFn: async (userId: string) => {
+      const { data, error } = await supabase.functions.invoke("delete-user", {
+        body: { user_id: userId },
+      });
+      if (error) throw new Error(error.message);
+      if (data?.error) throw new Error(data.error);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["users-master"] });
+      toast.success("User berhasil dihapus");
+      setDeleteTarget(null);
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const resetPassword = useMutation({
+    mutationFn: async ({ userId, password }: { userId: string; password: string }) => {
+      const { data, error } = await supabase.functions.invoke("reset-password", {
+        body: { user_id: userId, new_password: password },
+      });
+      if (error) throw new Error(error.message);
+      if (data?.error) throw new Error(data.error);
+    },
+    onSuccess: () => {
+      toast.success("Password berhasil diperbarui");
+      setResetTarget(null);
+      setNewPassword("");
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
   const openAdd = () => {
     setEditing(null);
     setForm({ name: "", email: "", username: "", nip: "", division_id: "", role: "pegawai", password: "" });
@@ -132,8 +175,7 @@ export default function MasterUsers() {
   const openEdit = (row: Profile) => {
     setEditing(row);
     setForm({
-      name: row.name,
-      email: row.email,
+      name: row.name, email: row.email,
       username: (row as any).username || "",
       nip: row.nip || "",
       division_id: row.division_id || "",
@@ -183,12 +225,26 @@ export default function MasterUsers() {
           },
         ]}
         actions={(row) => (
-          <div className="flex items-center justify-end gap-1">
-            <Button variant="ghost" size="icon" onClick={() => openEdit(row)}><Pencil className="h-4 w-4" /></Button>
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => openEdit(row)}>
+                <Pencil className="h-4 w-4 mr-2" /> Edit
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => { setResetTarget(row); setNewPassword(""); }}>
+                <KeyRound className="h-4 w-4 mr-2" /> Reset Password
+              </DropdownMenuItem>
+              <DropdownMenuItem className="text-destructive" onClick={() => setDeleteTarget(row)}>
+                <Trash2 className="h-4 w-4 mr-2" /> Hapus
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         )}
       />
 
+      {/* Add/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -197,12 +253,7 @@ export default function MasterUsers() {
           <div className="space-y-4 py-2">
             <div className="space-y-2">
               <Label>Username</Label>
-              <Input
-                value={form.username}
-                onChange={(e) => setForm({ ...form, username: e.target.value })}
-                placeholder="Username untuk login"
-                disabled={!!editing}
-              />
+              <Input value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} placeholder="Username untuk login" disabled={!!editing} />
             </div>
             <div className="space-y-2">
               <Label>Nama</Label>
@@ -212,22 +263,12 @@ export default function MasterUsers() {
               <>
                 <div className="space-y-2">
                   <Label>Email (opsional)</Label>
-                  <Input
-                    value={form.email}
-                    onChange={(e) => setForm({ ...form, email: e.target.value })}
-                    placeholder="email@example.com"
-                    type="email"
-                  />
+                  <Input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="email@example.com" type="email" />
                   <p className="text-xs text-muted-foreground">Kosongkan jika tidak ada email, akan dibuatkan otomatis.</p>
                 </div>
                 <div className="space-y-2">
                   <Label>Password</Label>
-                  <Input
-                    value={form.password}
-                    onChange={(e) => setForm({ ...form, password: e.target.value })}
-                    type="password"
-                    placeholder="Min. 6 karakter"
-                  />
+                  <Input value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} type="password" placeholder="Min. 6 karakter" />
                 </div>
               </>
             )}
@@ -240,9 +281,7 @@ export default function MasterUsers() {
               <Select value={form.division_id} onValueChange={(v) => setForm({ ...form, division_id: v })}>
                 <SelectTrigger><SelectValue placeholder="Pilih divisi" /></SelectTrigger>
                 <SelectContent>
-                  {divisions.map((d) => (
-                    <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
-                  ))}
+                  {divisions.map((d) => (<SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>))}
                 </SelectContent>
               </Select>
             </div>
@@ -251,20 +290,61 @@ export default function MasterUsers() {
               <Select value={form.role} onValueChange={(v) => setForm({ ...form, role: v as Enums<"app_role"> })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {ROLE_OPTIONS.map((r) => (
-                    <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
-                  ))}
+                  {ROLE_OPTIONS.map((r) => (<SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>))}
                 </SelectContent>
               </Select>
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={closeDialog}>Batal</Button>
-            <Button
-              onClick={() => isCreating ? createUser.mutate() : saveProfile.mutate()}
-              disabled={(!form.name || !form.username) || isSaving}
-            >
+            <Button onClick={() => isCreating ? createUser.mutate() : saveProfile.mutate()} disabled={(!form.name || !form.username) || isSaving}>
               {isSaving ? "Menyimpan..." : isCreating ? "Tambah User" : "Simpan"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Hapus User</AlertDialogTitle>
+            <AlertDialogDescription>
+              Apakah Anda yakin ingin menghapus user <strong>{deleteTarget?.name}</strong>? Tindakan ini tidak dapat dibatalkan.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => deleteTarget && deleteUser.mutate(deleteTarget.id)}
+              disabled={deleteUser.isPending}
+            >
+              {deleteUser.isPending ? "Menghapus..." : "Hapus"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Reset Password Dialog */}
+      <Dialog open={!!resetTarget} onOpenChange={(open) => { if (!open) { setResetTarget(null); setNewPassword(""); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reset Password — {resetTarget?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label>Password Baru</Label>
+              <Input value={newPassword} onChange={(e) => setNewPassword(e.target.value)} type="password" placeholder="Min. 6 karakter" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setResetTarget(null); setNewPassword(""); }}>Batal</Button>
+            <Button
+              onClick={() => resetTarget && resetPassword.mutate({ userId: resetTarget.id, password: newPassword })}
+              disabled={newPassword.length < 6 || resetPassword.isPending}
+            >
+              {resetPassword.isPending ? "Menyimpan..." : "Simpan Password"}
             </Button>
           </DialogFooter>
         </DialogContent>
