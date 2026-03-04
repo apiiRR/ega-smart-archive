@@ -70,7 +70,7 @@ export default function InboxTebusan() {
             <div>
               <span className="text-muted-foreground">Tujuan:</span>
               <div className="flex flex-wrap gap-1 mt-1">
-                {(detail.tujuan as string[]).map((id: string) => (
+                {(Array.isArray(detail.tujuan) ? detail.tujuan : []).map((id: string) => (
                   <Badge key={id} variant="secondary" className="text-xs">{orgUnits[id] || id}</Badge>
                 ))}
               </div>
@@ -78,7 +78,7 @@ export default function InboxTebusan() {
             <div>
               <span className="text-muted-foreground">Tebusan:</span>
               <div className="flex flex-wrap gap-1 mt-1">
-                {(detail.tebusan as string[]).map((id: string) => (
+                {(Array.isArray(detail.tebusan) ? detail.tebusan : []).map((id: string) => (
                   <Badge key={id} variant="outline" className="text-xs">{orgUnits[id] || id}</Badge>
                 ))}
               </div>
