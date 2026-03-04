@@ -84,7 +84,7 @@ export default function InboxInternal() {
             <div>
               <span className="text-muted-foreground">Tujuan:</span>
               <div className="flex flex-wrap gap-1 mt-1">
-                {(detail.tujuan as string[]).map((id: string) => (
+                {(Array.isArray(detail.tujuan) ? detail.tujuan : []).map((id: string) => (
                   <Badge key={id} variant="secondary" className="text-xs">{orgUnits[id] || id}</Badge>
                 ))}
               </div>
