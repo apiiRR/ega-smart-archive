@@ -149,7 +149,8 @@ export default function SuratInternal() {
     },
   });
 
-  const orgMap = Object.fromEntries(orgUnits.map(o => [o.id, o.name]));
+  const safeOrgUnits = Array.isArray(orgUnits) ? orgUnits : [];
+  const orgMap = Object.fromEntries(safeOrgUnits.map(o => [o.id, o.name]));
 
   const detail = items.find(s => s.id === detailId);
 
@@ -412,8 +413,8 @@ export default function SuratInternal() {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <MultiSelectOrg label="Tujuan" selected={form.tujuan} onChange={v => setForm({ ...form, tujuan: v })} options={orgUnits} />
-                <MultiSelectOrg label="Tebusan (Opsional)" selected={form.tebusan} onChange={v => setForm({ ...form, tebusan: v })} options={orgUnits} />
+                <MultiSelectOrg label="Tujuan" selected={form.tujuan} onChange={v => setForm({ ...form, tujuan: v })} options={safeOrgUnits} />
+                <MultiSelectOrg label="Tebusan (Opsional)" selected={form.tebusan} onChange={v => setForm({ ...form, tebusan: v })} options={safeOrgUnits} />
               </div>
 
               {mode === "manual" && (
