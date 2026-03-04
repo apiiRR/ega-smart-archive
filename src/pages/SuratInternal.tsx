@@ -269,16 +269,16 @@ export default function SuratInternal() {
             <div>
               <span className="text-muted-foreground">Tujuan:</span>
               <div className="flex flex-wrap gap-1 mt-1">
-                {(detail.tujuan as string[]).map((id: string) => (
+              {(Array.isArray(detail.tujuan) ? detail.tujuan : []).map((id: string) => (
                   <Badge key={id} variant="secondary" className="text-xs">{orgMap[id] || id}</Badge>
                 ))}
               </div>
             </div>
-            {(detail.tebusan as string[]).length > 0 && (
+            {Array.isArray(detail.tebusan) && detail.tebusan.length > 0 && (
               <div>
                 <span className="text-muted-foreground">Tebusan:</span>
                 <div className="flex flex-wrap gap-1 mt-1">
-                  {(detail.tebusan as string[]).map((id: string) => (
+                  {detail.tebusan.map((id: string) => (
                     <Badge key={id} variant="outline" className="text-xs">{orgMap[id] || id}</Badge>
                   ))}
                 </div>
