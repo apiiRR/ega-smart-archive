@@ -49,7 +49,12 @@ Deno.serve(async (req) => {
     });
 
     if (authError) {
-      return new Response(JSON.stringify({ error: "Username atau password salah" }), {
+      const isEmailNotConfirmed = authError.message?.toLowerCase().includes("email not confirmed");
+      return new Response(JSON.stringify({
+        error: isEmailNotConfirmed
+          ? "Akun belum aktif. Minta admin reset password sekali lagi untuk aktivasi akun."
+          : "Username atau password salah",
+      }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
