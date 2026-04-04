@@ -59,7 +59,16 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Delete user roles first
+    // Nullify references in related tables first
+    await supabaseAdmin.from("dispositions").update({ from_user_id: caller.id }).eq("from_user_id", user_id);
+    await supabaseAdmin.from("dispositions").update({ to_user_id: null }).eq("to_user_id", user_id);
+    await supabaseAdmin.from("surat_masuk").update({ created_by: caller.id }).eq("created_by", user_id);
+    await supabaseAdmin.from("surat_keluar").update({ created_by: caller.id }).eq("created_by", user_id);
+    await supabaseAdmin.from("surat_keluar").update({ approved_by: null }).eq("approved_by", user_id);
+    await supabaseAdmin.from("surat_internal").update({ created_by: caller.id }).eq("created_by", user_id);
+    await supabaseAdmin.from("divisions").update({ gm_user_id: null }).eq("gm_user_id", user_id);
+
+    // Delete user roles
     await supabaseAdmin.from("user_roles").delete().eq("user_id", user_id);
     // Delete profile
     await supabaseAdmin.from("profiles").delete().eq("id", user_id);
