@@ -249,7 +249,7 @@ export default function SuratKeluar() {
               onClick={() => save.mutate()}
               disabled={!form.nama_surat || !form.nomor_surat || !form.perihal || !form.tujuan || save.isPending}
             >
-              {save.isPending ? "Menyimpan..." : "Simpan sebagai Draft"}
+              {save.isPending ? "Menyimpan..." : "Simpan Surat"}
             </Button>
           </DialogFooter>
         </DialogContent>

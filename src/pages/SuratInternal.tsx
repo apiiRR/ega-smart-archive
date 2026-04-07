@@ -456,7 +456,7 @@ export default function SuratInternal() {
               <Button variant="outline" onClick={closeDialog}>Batal</Button>
               <Button onClick={() => save.mutate()} disabled={save.isPending}>
                 {save.isPending && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
-                Simpan sebagai Draft
+                Simpan Surat
               </Button>
             </DialogFooter>
           )}
