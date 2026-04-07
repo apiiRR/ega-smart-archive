@@ -208,6 +208,7 @@ export default function SuratInternal() {
         tebusan: form.tebusan,
         file_url,
         created_by: user.id,
+        status: "confirm",
       } as any);
       if (error) throw error;
     },
@@ -312,19 +313,9 @@ export default function SuratInternal() {
             </Button>
           )}
 
-          {detail.status === "draft" && (
-            <div className="flex items-center gap-3 pt-2 border-t">
-              <Button onClick={() => updateStatus.mutate({ id: detail.id, status: "confirm" as Status })} disabled={updateStatus.isPending}>
-                {updateStatus.isPending ? "Mengonfirmasi..." : "Konfirmasi Surat"}
-              </Button>
-              <span className="text-xs text-muted-foreground">Setelah dikonfirmasi, surat tidak dapat diedit atau dihapus.</span>
-            </div>
-          )}
-          {detail.status === "confirm" && (
-            <div className="pt-2 border-t">
-              <p className="text-sm text-muted-foreground italic">Surat ini sudah dikonfirmasi dan tidak dapat diubah.</p>
-            </div>
-          )}
+          <div className="pt-2 border-t">
+            <p className="text-sm text-muted-foreground italic">Surat ini sudah tersimpan dan tidak dapat diubah.</p>
+          </div>
         </div>
 
         <DispositionThread suratInternalId={detail.id} />
@@ -465,7 +456,7 @@ export default function SuratInternal() {
               <Button variant="outline" onClick={closeDialog}>Batal</Button>
               <Button onClick={() => save.mutate()} disabled={save.isPending}>
                 {save.isPending && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
-                Simpan sebagai Draft
+                Simpan Surat
               </Button>
             </DialogFooter>
           )}

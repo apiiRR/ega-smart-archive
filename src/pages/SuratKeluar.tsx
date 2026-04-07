@@ -70,6 +70,7 @@ export default function SuratKeluar() {
         ...form,
         created_by: user.id,
         file_url,
+        status: "confirm" as Status,
       });
       if (error) throw error;
     },
@@ -160,28 +161,11 @@ export default function SuratKeluar() {
             </div>
           )}
 
-          {/* Confirm action */}
-          {detail.status === "draft" && (
-            <div className="flex items-center gap-3 pt-2 border-t">
-              <Button
-                variant="default"
-                onClick={() => updateStatus.mutate({ id: detail.id, status: "confirm" as Status })}
-                disabled={updateStatus.isPending}
-              >
-                {updateStatus.isPending ? "Mengonfirmasi..." : "Konfirmasi Surat"}
-              </Button>
-              <span className="text-xs text-muted-foreground">
-                Setelah dikonfirmasi, surat tidak dapat diedit atau dihapus.
-              </span>
-            </div>
-          )}
-          {detail.status === "confirm" && (
-            <div className="pt-2 border-t">
-              <p className="text-sm text-muted-foreground italic">
-                Surat ini sudah dikonfirmasi dan tidak dapat diubah.
-              </p>
-            </div>
-          )}
+          <div className="pt-2 border-t">
+            <p className="text-sm text-muted-foreground italic">
+              Surat ini sudah tersimpan dan tidak dapat diubah.
+            </p>
+          </div>
         </div>
 
         <DispositionThread suratKeluarId={detail.id} />
@@ -265,7 +249,7 @@ export default function SuratKeluar() {
               onClick={() => save.mutate()}
               disabled={!form.nama_surat || !form.nomor_surat || !form.perihal || !form.tujuan || save.isPending}
             >
-              {save.isPending ? "Menyimpan..." : "Simpan sebagai Draft"}
+              {save.isPending ? "Menyimpan..." : "Simpan Surat"}
             </Button>
           </DialogFooter>
         </DialogContent>
