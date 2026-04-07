@@ -208,6 +208,7 @@ export default function SuratInternal() {
         tebusan: form.tebusan,
         file_url,
         created_by: user.id,
+        status: "confirm",
       } as any);
       if (error) throw error;
     },
