@@ -70,6 +70,7 @@ export default function SuratKeluar() {
         ...form,
         created_by: user.id,
         file_url,
+        status: "confirm" as Status,
       });
       if (error) throw error;
     },
