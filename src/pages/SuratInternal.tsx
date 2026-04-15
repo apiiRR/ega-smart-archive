@@ -211,7 +211,7 @@ export default function SuratInternal() {
 
 
   const openAdd = () => {
-    setMode("choose");
+    setMode("manual");
     setForm({ nama_surat: "", nomor_surat: "", perihal: "", isi_surat: "", tujuan: [], tebusan: [] });
     setFile(null);
     setSelectedTemplateId("");
@@ -337,26 +337,7 @@ export default function SuratInternal() {
             <DialogTitle>Buat Surat Internal</DialogTitle>
           </DialogHeader>
 
-          {mode === "choose" && (
-            <div className="grid grid-cols-2 gap-4 py-4">
-              <button
-                onClick={() => setMode("manual")}
-                className="flex flex-col items-center gap-3 p-6 rounded-lg border-2 border-dashed hover:border-primary hover:bg-primary/5 transition-colors"
-              >
-                <PenLine className="h-8 w-8 text-primary" />
-                <span className="font-medium">Tulis Manual</span>
-                <span className="text-xs text-muted-foreground text-center">Tulis isi surat sendiri menggunakan editor</span>
-              </button>
-              <button
-                onClick={() => setMode("template")}
-                className="flex flex-col items-center gap-3 p-6 rounded-lg border-2 border-dashed hover:border-primary hover:bg-primary/5 transition-colors"
-              >
-                <FileText className="h-8 w-8 text-primary" />
-                <span className="font-medium">Dari Template</span>
-                <span className="text-xs text-muted-foreground text-center">Pilih template dan isi field dinamis</span>
-              </button>
-            </div>
-          )}
+          {/* Mode choose hidden - langsung manual */}
 
           {(mode === "manual" || mode === "template") && (
             <div className="space-y-4 py-2">
