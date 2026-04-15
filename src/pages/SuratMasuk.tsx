@@ -16,20 +16,9 @@ import { Eye, Plus, Upload, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale/id";
-import type { Tables, Enums } from "@/integrations/supabase/types";
+import type { Tables } from "@/integrations/supabase/types";
 
 type SuratMasukRow = Tables<"surat_masuk">;
-type Status = Enums<"document_status">;
-
-const statusColors: Record<Status, string> = {
-  draft: "bg-yellow-100 text-yellow-800",
-  confirm: "bg-green-100 text-green-800",
-};
-
-const statusLabels: Record<Status, string> = {
-  draft: "Draft",
-  confirm: "Dikonfirmasi",
-};
 
 export default function SuratMasuk() {
   const { user, isAdmin } = useAuth();
@@ -113,7 +102,6 @@ export default function SuratMasuk() {
               <h2 className="text-xl font-bold text-foreground">{detail.nama_surat}</h2>
               <p className="text-sm text-muted-foreground">No: {detail.nomor_surat}</p>
             </div>
-            <Badge className={statusColors[detail.status]}>{statusLabels[detail.status]}</Badge>
           </div>
 
           <div className="grid grid-cols-2 gap-4 text-sm">
@@ -185,13 +173,6 @@ export default function SuratMasuk() {
           { key: "nomor_surat", label: "No. Surat" },
           { key: "nama_surat", label: "Nama Surat" },
           { key: "asal_surat", label: "Asal Surat" },
-          {
-            key: "status",
-            label: "Status",
-            render: (row) => (
-              <Badge className={statusColors[row.status]}>{statusLabels[row.status]}</Badge>
-            ),
-          },
           {
             key: "created_at",
             label: "Tanggal",

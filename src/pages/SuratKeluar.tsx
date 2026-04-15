@@ -16,20 +16,9 @@ import { Eye, ArrowLeft, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale/id";
-import type { Tables, Enums } from "@/integrations/supabase/types";
+import type { Tables } from "@/integrations/supabase/types";
 
 type SuratKeluarRow = Tables<"surat_keluar">;
-type Status = Enums<"document_status">;
-
-const statusColors: Record<Status, string> = {
-  draft: "bg-yellow-100 text-yellow-800",
-  confirm: "bg-green-100 text-green-800",
-};
-
-const statusLabels: Record<Status, string> = {
-  draft: "Draft",
-  confirm: "Dikonfirmasi",
-};
 
 export default function SuratKeluar() {
   const { user } = useAuth();
@@ -115,7 +104,6 @@ export default function SuratKeluar() {
               <h2 className="text-xl font-bold text-foreground">{detail.nama_surat}</h2>
               <p className="text-sm text-muted-foreground">No: {detail.nomor_surat}</p>
             </div>
-            <Badge className={statusColors[detail.status]}>{statusLabels[detail.status]}</Badge>
           </div>
 
           <div className="grid grid-cols-2 gap-4 text-sm">
@@ -192,13 +180,6 @@ export default function SuratKeluar() {
           { key: "nama_surat", label: "Nama Surat" },
           { key: "tujuan", label: "Tujuan" },
           { key: "perihal", label: "Perihal" },
-          {
-            key: "status",
-            label: "Status",
-            render: (row) => (
-              <Badge className={statusColors[row.status]}>{statusLabels[row.status]}</Badge>
-            ),
-          },
           {
             key: "created_at",
             label: "Tanggal",
