@@ -23,11 +23,15 @@ export default function Disposisi() {
   const { user } = useAuth();
 
   const { data: dispositions = [], isLoading } = useQuery({
-    queryKey: ["all-dispositions"],
+    queryKey: ["all-dispositions", user?.id],
+    enabled: !!user,
     queryFn: async () => {
+      if (!user) return [];
+      // Only show dispositions addressed TO the current user, not ones they created
       const { data, error } = await supabase
         .from("dispositions")
         .select("*")
+        .neq("from_user_id", user.id)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data as DispositionRow[];
