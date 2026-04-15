@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
+
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
@@ -16,20 +16,9 @@ import { Eye, Plus, Upload, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale/id";
-import type { Tables, Enums } from "@/integrations/supabase/types";
+import type { Tables } from "@/integrations/supabase/types";
 
 type SuratMasukRow = Tables<"surat_masuk">;
-type Status = Enums<"document_status">;
-
-const statusColors: Record<Status, string> = {
-  draft: "bg-yellow-100 text-yellow-800",
-  confirm: "bg-green-100 text-green-800",
-};
-
-const statusLabels: Record<Status, string> = {
-  draft: "Draft",
-  confirm: "Dikonfirmasi",
-};
 
 export default function SuratMasuk() {
   const { user, isAdmin } = useAuth();
@@ -68,7 +57,7 @@ export default function SuratMasuk() {
         ...form,
         created_by: user.id,
         file_url,
-        status: "confirm" as Status,
+        status: "confirm",
       });
       if (error) throw error;
     },
@@ -80,17 +69,6 @@ export default function SuratMasuk() {
     onError: (e: any) => toast.error(e.message),
   });
 
-  const updateStatus = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: Status }) => {
-      const { error } = await supabase.from("surat_masuk").update({ status }).eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["surat_masuk"] });
-      toast.success("Status berhasil diperbarui");
-    },
-    onError: (e: any) => toast.error(e.message),
-  });
 
   const openAdd = () => {
     setForm({ nama_surat: "", nomor_surat: "", asal_surat: "", catatan: "" });
@@ -113,7 +91,6 @@ export default function SuratMasuk() {
               <h2 className="text-xl font-bold text-foreground">{detail.nama_surat}</h2>
               <p className="text-sm text-muted-foreground">No: {detail.nomor_surat}</p>
             </div>
-            <Badge className={statusColors[detail.status]}>{statusLabels[detail.status]}</Badge>
           </div>
 
           <div className="grid grid-cols-2 gap-4 text-sm">
@@ -185,13 +162,6 @@ export default function SuratMasuk() {
           { key: "nomor_surat", label: "No. Surat" },
           { key: "nama_surat", label: "Nama Surat" },
           { key: "asal_surat", label: "Asal Surat" },
-          {
-            key: "status",
-            label: "Status",
-            render: (row) => (
-              <Badge className={statusColors[row.status]}>{statusLabels[row.status]}</Badge>
-            ),
-          },
           {
             key: "created_at",
             label: "Tanggal",
