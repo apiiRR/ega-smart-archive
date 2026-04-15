@@ -129,13 +129,7 @@ export function AppSidebar() {
           </SidebarGroup>
         )}
 
-        {templateMenus.length > 0 && (
-          <SidebarGroup>
-            <SidebarGroupContent>
-              <SidebarMenu>{templateMenus.map(renderMenuItem)}</SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        )}
+        {/* Template Surat menu hidden for now */}
 
         {masterMenus.length > 0 && (
           <SidebarGroup>
