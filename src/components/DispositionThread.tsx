@@ -8,8 +8,7 @@ import { Label } from "@/components/ui/label";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { MessageSquare, Send, ArrowRight, Clock, CheckCircle2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { MessageSquare, Send, ArrowRight, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale/id";
@@ -31,7 +30,6 @@ interface Disposition {
   surat_masuk_id: string | null;
   surat_keluar_id: string | null;
   surat_internal_id: string | null;
-  status: "draft" | "confirm";
 }
 
 export function DispositionThread({ suratMasukId, suratKeluarId, suratInternalId }: DispositionThreadProps) {
@@ -84,6 +82,7 @@ export function DispositionThread({ suratMasukId, suratKeluarId, suratInternalId
         from_user_id: user.id,
         to_division_id: toDivisionId,
         parent_id: replyTo,
+        status: "confirm" as any,
       };
       if (suratMasukId) payload.surat_masuk_id = suratMasukId;
       if (suratKeluarId) payload.surat_keluar_id = suratKeluarId;
@@ -97,18 +96,6 @@ export function DispositionThread({ suratMasukId, suratKeluarId, suratInternalId
       setCatatan("");
       setToDivisionId("");
       setReplyTo(null);
-    },
-    onError: (e: any) => toast.error(e.message),
-  });
-
-  const confirmDisposition = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("dispositions").update({ status: "confirm" as any }).eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey });
-      toast.success("Disposisi dikonfirmasi");
     },
     onError: (e: any) => toast.error(e.message),
   });
@@ -131,9 +118,6 @@ export function DispositionThread({ suratMasukId, suratKeluarId, suratInternalId
             <span className="font-semibold text-foreground">{profileMap[d.from_user_id] || "Unknown"}</span>
             <ArrowRight className="h-3 w-3 text-muted-foreground" />
             <span className="text-primary font-medium">{divisionMap[d.to_division_id] || "Unknown"}</span>
-            <Badge className={d.status === "confirm" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}>
-              {d.status === "confirm" ? "Dikonfirmasi" : "Draft"}
-            </Badge>
           </div>
           <p className="text-sm text-foreground whitespace-pre-wrap">{d.catatan}</p>
         </div>
@@ -142,24 +126,13 @@ export function DispositionThread({ suratMasukId, suratKeluarId, suratInternalId
           {format(new Date(d.created_at), "dd MMM yyyy HH:mm", { locale: idLocale })}
         </div>
       </div>
-      <div className="flex items-center gap-2 mt-2">
-        {!isReply && d.status === "confirm" && (
+      {!isReply && (
+        <div className="flex items-center gap-2 mt-2">
           <Button variant="ghost" size="sm" className="text-xs" onClick={() => setReplyTo(d.id)}>
             <MessageSquare className="h-3 w-3 mr-1" /> Balas
           </Button>
-        )}
-        {d.status === "draft" && d.from_user_id === user?.id && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="text-xs"
-            onClick={() => confirmDisposition.mutate(d.id)}
-            disabled={confirmDisposition.isPending}
-          >
-            <CheckCircle2 className="h-3 w-3 mr-1" /> Konfirmasi
-          </Button>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 
