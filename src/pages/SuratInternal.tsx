@@ -209,17 +209,6 @@ export default function SuratInternal() {
     onError: (e: any) => toast.error(e.message),
   });
 
-  const updateStatus = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: Status }) => {
-      const { error } = await supabase.from("surat_internal").update({ status }).eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["surat_internal"] });
-      toast.success("Status berhasil diperbarui");
-    },
-    onError: (e: any) => toast.error(e.message),
-  });
 
   const openAdd = () => {
     setMode("choose");

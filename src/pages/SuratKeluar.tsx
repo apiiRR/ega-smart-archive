@@ -59,7 +59,7 @@ export default function SuratKeluar() {
         ...form,
         created_by: user.id,
         file_url,
-        status: "confirm" as Status,
+        status: "confirm",
       });
       if (error) throw error;
     },
@@ -71,17 +71,6 @@ export default function SuratKeluar() {
     onError: (e: any) => toast.error(e.message),
   });
 
-  const updateStatus = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: Status }) => {
-      const { error } = await supabase.from("surat_keluar").update({ status }).eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["surat_keluar"] });
-      toast.success("Status berhasil diperbarui");
-    },
-    onError: (e: any) => toast.error(e.message),
-  });
 
   const openAdd = () => {
     setForm({ nama_surat: "", nomor_surat: "", perihal: "", tujuan: "", isi_surat: "" });
