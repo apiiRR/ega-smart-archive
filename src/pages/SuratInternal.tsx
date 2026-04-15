@@ -23,7 +23,7 @@ import { Eye, ArrowLeft, Upload, FileText, PenLine, Loader2 } from "lucide-react
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale/id";
-import type { Enums } from "@/integrations/supabase/types";
+
 
 interface OrgUnit {
   id: string;
