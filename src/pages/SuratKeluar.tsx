@@ -7,8 +7,6 @@ import { DispositionThread } from "@/components/DispositionThread";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
@@ -27,7 +25,7 @@ export default function SuratKeluar() {
   const [detailId, setDetailId] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [form, setForm] = useState({
-    nama_surat: "", nomor_surat: "", perihal: "", tujuan: "", isi_surat: "",
+    nama_surat: "", nomor_surat: "", perihal: "", tujuan: "",
   });
 
   const { data = [], isLoading } = useQuery({
@@ -47,18 +45,15 @@ export default function SuratKeluar() {
   const save = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error("Not authenticated");
-      let file_url: string | null = null;
-      if (file) {
-        const ext = file.name.split(".").pop();
-        const path = `surat-keluar/${Date.now()}.${ext}`;
-        const { error: upErr } = await supabase.storage.from("letter-attachments").upload(path, file);
-        if (upErr) throw upErr;
-        file_url = path;
-      }
+      if (!file) throw new Error("Dokumen scan wajib diunggah");
+      const ext = file.name.split(".").pop();
+      const path = `surat-keluar/${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("letter-attachments").upload(path, file);
+      if (upErr) throw upErr;
       const { error } = await supabase.from("surat_keluar").insert({
         ...form,
         created_by: user.id,
-        file_url,
+        file_url: path,
         status: "confirm",
       });
       if (error) throw error;
@@ -71,15 +66,13 @@ export default function SuratKeluar() {
     onError: (e: any) => toast.error(e.message),
   });
 
-
   const openAdd = () => {
-    setForm({ nama_surat: "", nomor_surat: "", perihal: "", tujuan: "", isi_surat: "" });
+    setForm({ nama_surat: "", nomor_surat: "", perihal: "", tujuan: "" });
     setFile(null);
     setDialogOpen(true);
   };
   const closeDialog = () => { setDialogOpen(false); setFile(null); };
 
-  // Detail view
   if (detailId && detail) {
     return (
       <div className="space-y-6">
@@ -88,11 +81,9 @@ export default function SuratKeluar() {
         </Button>
 
         <div className="bg-card border rounded-lg p-6 space-y-4">
-          <div className="flex items-start justify-between">
-            <div>
-              <h2 className="text-xl font-bold text-foreground">{detail.nama_surat}</h2>
-              <p className="text-sm text-muted-foreground">No: {detail.nomor_surat}</p>
-            </div>
+          <div>
+            <h2 className="text-xl font-bold text-foreground">{detail.nama_surat}</h2>
+            <p className="text-sm text-muted-foreground">No: {detail.nomor_surat}</p>
           </div>
 
           <div className="grid grid-cols-2 gap-4 text-sm">
@@ -110,13 +101,6 @@ export default function SuratKeluar() {
             </div>
           </div>
 
-          {detail.isi_surat && (
-            <div className="text-sm">
-              <span className="text-muted-foreground">Isi Surat:</span>
-              <div className="mt-1 p-3 bg-muted/30 rounded border whitespace-pre-wrap">{detail.isi_surat}</div>
-            </div>
-          )}
-
           {detail.file_url && (
             <div>
               <Button
@@ -127,13 +111,13 @@ export default function SuratKeluar() {
                     .from("letter-attachments")
                     .createSignedUrl(detail.file_url!, 3600);
                   if (error || !data?.signedUrl) {
-                    toast.error("Gagal membuka lampiran");
+                    toast.error("Gagal membuka dokumen");
                     return;
                   }
                   window.open(data.signedUrl, "_blank");
                 }}
               >
-                <Upload className="h-3 w-3" /> Lihat Lampiran
+                <Upload className="h-3 w-3" /> Lihat Dokumen
               </Button>
             </div>
           )}
@@ -205,19 +189,16 @@ export default function SuratKeluar() {
               <Input value={form.tujuan} onChange={e => setForm({ ...form, tujuan: e.target.value })} placeholder="Tujuan pengiriman" />
             </div>
             <div className="space-y-2">
-              <Label>Isi Surat</Label>
-              <Textarea value={form.isi_surat} onChange={e => setForm({ ...form, isi_surat: e.target.value })} placeholder="Isi/konten surat" rows={5} />
-            </div>
-            <div className="space-y-2">
-              <Label>Lampiran (Opsional)</Label>
-              <Input type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" onChange={e => setFile(e.target.files?.[0] || null)} />
+              <Label>Dokumen Scan <span className="text-destructive">*</span></Label>
+              <Input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => setFile(e.target.files?.[0] || null)} />
+              <p className="text-xs text-muted-foreground">Upload file scan surat (PDF, JPG, PNG)</p>
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={closeDialog}>Batal</Button>
             <Button
               onClick={() => save.mutate()}
-              disabled={!form.nama_surat || !form.nomor_surat || !form.perihal || !form.tujuan || save.isPending}
+              disabled={!form.nama_surat || !form.nomor_surat || !form.perihal || !form.tujuan || !file || save.isPending}
             >
               {save.isPending ? "Menyimpan..." : "Simpan Surat"}
             </Button>
