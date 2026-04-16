@@ -93,12 +93,9 @@ export default function SuratInternal() {
   const qc = useQueryClient();
   const [detailId, setDetailId] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [mode, setMode] = useState<"choose" | "manual" | "template">("choose");
   const [file, setFile] = useState<File | null>(null);
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
-  const [templateFields, setTemplateFields] = useState<Record<string, string>>({});
   const [form, setForm] = useState({
-    nama_surat: "", nomor_surat: "", perihal: "", isi_surat: "",
+    nama_surat: "", nomor_surat: "", perihal: "",
     tujuan: [] as string[], tebusan: [] as string[],
   });
 
