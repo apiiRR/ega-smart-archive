@@ -561,6 +561,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_disposition_letter_details: {
+        Args: { _disposition_id: string }
+        Returns: Json
+      }
       get_user_division_id: { Args: { _user_id: string }; Returns: string }
       has_permission: {
         Args: { _action: string; _menu_name: string; _user_id: string }
