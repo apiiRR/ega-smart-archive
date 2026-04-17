@@ -148,7 +148,7 @@ export function DispositionThread({ suratMasukId, suratKeluarId, suratInternalId
           {format(new Date(d.created_at), "dd MMM yyyy HH:mm", { locale: idLocale })}
         </div>
       </div>
-      {!isReply && letterCreatorUserId && user?.id !== letterCreatorUserId && letterCreatorDivisionId && (
+      {!isReply && letterCreatorUserId && user?.id !== letterCreatorUserId && (
         <div className="flex items-center gap-2 mt-2">
           <Button variant="ghost" size="sm" className="text-xs" onClick={() => setReplyTo(d.id)}>
             <MessageSquare className="h-3 w-3 mr-1" /> Balas ke Pembuat Surat
