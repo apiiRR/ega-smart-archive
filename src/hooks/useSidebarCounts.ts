@@ -10,13 +10,18 @@ export function useSidebarCounts() {
     enabled: !!user,
     refetchInterval: 30000,
     queryFn: async () => {
-      // All letters and dispositions now save directly as confirmed,
-      // so no draft counts are needed anymore.
+      let disposisi = 0;
+      if (user) {
+        const { data, error } = await supabase.rpc("count_unread_dispositions", {
+          _user_id: user.id,
+        });
+        if (!error && typeof data === "number") disposisi = data;
+      }
       return {
         surat_masuk: 0,
         surat_keluar: 0,
         surat_internal: 0,
-        disposisi: 0,
+        disposisi,
       };
     },
   });
