@@ -79,13 +79,25 @@ export function DispositionThread({ suratMasukId, suratKeluarId, suratInternalId
     },
   });
 
+  // Ambil division pembuat surat sebagai fallback (boleh null jika direksi tanpa divisi)
+  const { data: creatorProfile } = useQuery({
+    queryKey: ["creator-profile", letterCreatorUserId],
+    enabled: !!letterCreatorUserId,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("profiles").select("division_id").eq("id", letterCreatorUserId!).maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const sendDisposition = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error("Not authenticated");
-      // Reply mode: kunci tujuan ke pembuat surat asli
-      const targetDivisionId = isReplyMode ? letterCreatorDivisionId : toDivisionId;
+      // Reply mode: kunci tujuan ke pembuat surat asli (user-level), divisi opsional
+      const fallbackDivisionId = letterCreatorDivisionId || creatorProfile?.division_id || toDivisionId;
+      const targetDivisionId = isReplyMode ? fallbackDivisionId : toDivisionId;
       const targetUserId = isReplyMode ? letterCreatorUserId : null;
-      if (!targetDivisionId) throw new Error("Tujuan divisi tidak ditemukan");
+      if (!targetDivisionId) throw new Error("Tujuan divisi tidak ditemukan untuk pembuat surat");
       const payload: any = {
         catatan,
         from_user_id: user.id,
