@@ -36,12 +36,13 @@ interface Disposition {
   surat_internal_id: string | null;
 }
 
-export function DispositionThread({ suratMasukId, suratKeluarId, suratInternalId }: DispositionThreadProps) {
+export function DispositionThread({ suratMasukId, suratKeluarId, suratInternalId, letterCreatorUserId, letterCreatorDivisionId }: DispositionThreadProps) {
   const { user } = useAuth();
   const qc = useQueryClient();
   const [catatan, setCatatan] = useState("");
   const [toDivisionId, setToDivisionId] = useState("");
   const [replyTo, setReplyTo] = useState<string | null>(null);
+  const isReplyMode = !!replyTo;
 
   const { data: divisions = [] } = useQuery({
     queryKey: ["divisions-list"],
