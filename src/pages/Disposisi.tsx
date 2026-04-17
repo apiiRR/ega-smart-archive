@@ -185,6 +185,8 @@ export default function Disposisi() {
           suratMasukId={selectedDisposition.surat_masuk_id || undefined}
           suratKeluarId={selectedDisposition.surat_keluar_id || undefined}
           suratInternalId={selectedDisposition.surat_internal_id || undefined}
+          letterCreatorUserId={letterDetails?.created_by}
+          letterCreatorDivisionId={letterDetails?.creator_division_id}
         />
       </div>
     );
