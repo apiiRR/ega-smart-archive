@@ -35,6 +35,8 @@ interface LetterDetails {
   catatan?: string;
   file_url?: string;
   created_at: string;
+  created_by?: string;
+  creator_division_id?: string;
 }
 
 export default function Disposisi() {
