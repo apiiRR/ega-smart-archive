@@ -80,6 +80,35 @@ export type Database = {
         }
         Relationships: []
       }
+      disposition_reads: {
+        Row: {
+          disposition_id: string
+          id: string
+          read_at: string
+          user_id: string
+        }
+        Insert: {
+          disposition_id: string
+          id?: string
+          read_at?: string
+          user_id: string
+        }
+        Update: {
+          disposition_id?: string
+          id?: string
+          read_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "disposition_reads_disposition_id_fkey"
+            columns: ["disposition_id"]
+            isOneToOne: false
+            referencedRelation: "dispositions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dispositions: {
         Row: {
           catatan: string
@@ -561,6 +590,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      count_unread_dispositions: { Args: { _user_id: string }; Returns: number }
       get_disposition_letter_details: {
         Args: { _disposition_id: string }
         Returns: Json

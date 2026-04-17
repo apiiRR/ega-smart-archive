@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { DispositionThread } from "@/components/DispositionThread";
@@ -41,7 +41,21 @@ interface LetterDetails {
 
 export default function Disposisi() {
   const { user } = useAuth();
+  const qc = useQueryClient();
   const [selectedDisposition, setSelectedDisposition] = useState<DispositionRow | null>(null);
+
+  const handleOpenDisposition = async (d: DispositionRow) => {
+    setSelectedDisposition(d);
+    if (user) {
+      await supabase
+        .from("disposition_reads")
+        .upsert(
+          { user_id: user.id, disposition_id: d.id },
+          { onConflict: "user_id,disposition_id", ignoreDuplicates: true }
+        );
+      qc.invalidateQueries({ queryKey: ["sidebar-counts", user.id] });
+    }
+  };
 
   const { data: dispositions = [], isLoading } = useQuery({
     queryKey: ["all-dispositions", user?.id],
@@ -213,7 +227,7 @@ export default function Disposisi() {
             <Card
               key={d.id}
               className="cursor-pointer hover:border-primary/50 transition-colors"
-              onClick={() => setSelectedDisposition(d)}
+              onClick={() => handleOpenDisposition(d)}
             >
               <CardContent className="p-4">
                 <div className="flex items-start justify-between gap-2">
