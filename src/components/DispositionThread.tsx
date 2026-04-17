@@ -17,6 +17,10 @@ interface DispositionThreadProps {
   suratMasukId?: string;
   suratKeluarId?: string;
   suratInternalId?: string;
+  /** ID pembuat surat asli — balasan akan dikunci ke user/divisi ini */
+  letterCreatorUserId?: string;
+  /** Divisi pembuat surat asli */
+  letterCreatorDivisionId?: string;
 }
 
 interface Disposition {
