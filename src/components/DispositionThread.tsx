@@ -82,10 +82,15 @@ export function DispositionThread({ suratMasukId, suratKeluarId, suratInternalId
   const sendDisposition = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error("Not authenticated");
+      // Reply mode: kunci tujuan ke pembuat surat asli
+      const targetDivisionId = isReplyMode ? letterCreatorDivisionId : toDivisionId;
+      const targetUserId = isReplyMode ? letterCreatorUserId : null;
+      if (!targetDivisionId) throw new Error("Tujuan divisi tidak ditemukan");
       const payload: any = {
         catatan,
         from_user_id: user.id,
-        to_division_id: toDivisionId,
+        to_division_id: targetDivisionId,
+        to_user_id: targetUserId,
         parent_id: replyTo,
         status: "confirm" as any,
       };
@@ -97,7 +102,7 @@ export function DispositionThread({ suratMasukId, suratKeluarId, suratInternalId
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey });
-      toast.success("Disposisi berhasil dikirim");
+      toast.success(isReplyMode ? "Balasan disposisi terkirim" : "Disposisi berhasil dikirim");
       setCatatan("");
       setToDivisionId("");
       setReplyTo(null);
