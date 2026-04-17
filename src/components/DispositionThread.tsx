@@ -178,35 +178,41 @@ export function DispositionThread({ suratMasukId, suratKeluarId, suratInternalId
             </Button>
           )}
         </p>
-        <div className="space-y-2">
-          <Label>Tujuan Divisi</Label>
-          <Select value={toDivisionId} onValueChange={setToDivisionId}>
-            <SelectTrigger>
-              <SelectValue placeholder="Pilih divisi tujuan" />
-            </SelectTrigger>
-            <SelectContent>
-              {divisions.map(d => (
-                <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        {isReplyMode ? (
+          <p className="text-xs text-muted-foreground">
+            Balasan akan dikirim ke pembuat surat: <span className="font-medium text-foreground">{letterCreatorUserId ? (profileMap[letterCreatorUserId] || "Pembuat surat") : "Pembuat surat"}</span>
+          </p>
+        ) : (
+          <div className="space-y-2">
+            <Label>Tujuan Divisi</Label>
+            <Select value={toDivisionId} onValueChange={setToDivisionId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Pilih divisi tujuan" />
+              </SelectTrigger>
+              <SelectContent>
+                {divisions.map(d => (
+                  <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
         <div className="space-y-2">
           <Label>Catatan</Label>
           <Textarea
             value={catatan}
             onChange={e => setCatatan(e.target.value)}
-            placeholder="Tulis catatan disposisi..."
+            placeholder={isReplyMode ? "Tulis balasan..." : "Tulis catatan disposisi..."}
             rows={3}
           />
         </div>
         <Button
           onClick={() => sendDisposition.mutate()}
-          disabled={!catatan.trim() || !toDivisionId || sendDisposition.isPending}
+          disabled={!catatan.trim() || (!isReplyMode && !toDivisionId) || sendDisposition.isPending}
           size="sm"
         >
           <Send className="h-4 w-4 mr-1" />
-          {sendDisposition.isPending ? "Mengirim..." : "Kirim Disposisi"}
+          {sendDisposition.isPending ? "Mengirim..." : isReplyMode ? "Kirim Balasan" : "Kirim Disposisi"}
         </Button>
       </div>
     </div>
