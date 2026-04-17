@@ -168,53 +168,55 @@ export function DispositionThread({ suratMasukId, suratKeluarId, suratInternalId
         </div>
       )}
 
-      {/* Form */}
-      <div className="border rounded-lg p-4 space-y-3 bg-muted/20">
-        <p className="text-sm font-medium text-foreground">
-          {replyTo ? "Balas Disposisi" : "Kirim Disposisi Baru"}
-          {replyTo && (
-            <Button variant="link" size="sm" className="ml-2 text-xs p-0 h-auto" onClick={() => setReplyTo(null)}>
-              Batal balas
-            </Button>
-          )}
-        </p>
-        {isReplyMode ? (
-          <p className="text-xs text-muted-foreground">
-            Balasan akan dikirim ke pembuat surat: <span className="font-medium text-foreground">{letterCreatorUserId ? (profileMap[letterCreatorUserId] || "Pembuat surat") : "Pembuat surat"}</span>
+      {/* Form: hanya tampil jika user adalah pembuat surat (boleh disposisi root) ATAU sedang membalas */}
+      {(!letterCreatorUserId || user?.id === letterCreatorUserId || isReplyMode) && (
+        <div className="border rounded-lg p-4 space-y-3 bg-muted/20">
+          <p className="text-sm font-medium text-foreground">
+            {replyTo ? "Balas Disposisi" : "Kirim Disposisi Baru"}
+            {replyTo && (
+              <Button variant="link" size="sm" className="ml-2 text-xs p-0 h-auto" onClick={() => setReplyTo(null)}>
+                Batal balas
+              </Button>
+            )}
           </p>
-        ) : (
+          {isReplyMode ? (
+            <p className="text-xs text-muted-foreground">
+              Balasan akan dikirim ke pembuat surat: <span className="font-medium text-foreground">{letterCreatorUserId ? (profileMap[letterCreatorUserId] || "Pembuat surat") : "Pembuat surat"}</span>
+            </p>
+          ) : (
+            <div className="space-y-2">
+              <Label>Tujuan Divisi</Label>
+              <Select value={toDivisionId} onValueChange={setToDivisionId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih divisi tujuan" />
+                </SelectTrigger>
+                <SelectContent>
+                  {divisions.map(d => (
+                    <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
           <div className="space-y-2">
-            <Label>Tujuan Divisi</Label>
-            <Select value={toDivisionId} onValueChange={setToDivisionId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Pilih divisi tujuan" />
-              </SelectTrigger>
-              <SelectContent>
-                {divisions.map(d => (
-                  <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Label>Catatan</Label>
+            <Textarea
+              value={catatan}
+              onChange={e => setCatatan(e.target.value)}
+              placeholder={isReplyMode ? "Tulis balasan..." : "Tulis catatan disposisi..."}
+              rows={3}
+            />
           </div>
-        )}
-        <div className="space-y-2">
-          <Label>Catatan</Label>
-          <Textarea
-            value={catatan}
-            onChange={e => setCatatan(e.target.value)}
-            placeholder={isReplyMode ? "Tulis balasan..." : "Tulis catatan disposisi..."}
-            rows={3}
-          />
+          <Button
+            onClick={() => sendDisposition.mutate()}
+            disabled={!catatan.trim() || (!isReplyMode && !toDivisionId) || sendDisposition.isPending}
+            size="sm"
+          >
+            <Send className="h-4 w-4 mr-1" />
+            {sendDisposition.isPending ? "Mengirim..." : isReplyMode ? "Kirim Balasan" : "Kirim Disposisi"}
+          </Button>
         </div>
-        <Button
-          onClick={() => sendDisposition.mutate()}
-          disabled={!catatan.trim() || (!isReplyMode && !toDivisionId) || sendDisposition.isPending}
-          size="sm"
-        >
-          <Send className="h-4 w-4 mr-1" />
-          {sendDisposition.isPending ? "Mengirim..." : isReplyMode ? "Kirim Balasan" : "Kirim Disposisi"}
-        </Button>
-      </div>
+      )}
     </div>
   );
 }
