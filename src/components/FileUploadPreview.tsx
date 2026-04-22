@@ -15,6 +15,7 @@ interface FileUploadPreviewProps {
   file: File | null;
   onChange: (file: File | null) => void;
   helperText?: string;
+  previewHeightClass?: string;
 }
 
 export function FileUploadPreview({
@@ -23,6 +24,7 @@ export function FileUploadPreview({
   file,
   onChange,
   helperText = "Hanya PDF atau gambar (JPG, PNG, WEBP, GIF). Maks 20MB.",
+  previewHeightClass = "h-56",
 }: FileUploadPreviewProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
