@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale/id";
 import type { Tables } from "@/integrations/supabase/types";
+import { FileUploadPreview } from "@/components/FileUploadPreview";
 
 type SuratKeluarRow = Tables<"surat_keluar">;
 
@@ -188,11 +189,12 @@ export default function SuratKeluar() {
               <Label>Tujuan</Label>
               <Input value={form.tujuan} onChange={e => setForm({ ...form, tujuan: e.target.value })} placeholder="Tujuan pengiriman" />
             </div>
-            <div className="space-y-2">
-              <Label>Dokumen Scan <span className="text-destructive">*</span></Label>
-              <Input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => setFile(e.target.files?.[0] || null)} />
-              <p className="text-xs text-muted-foreground">Upload file scan surat (PDF, JPG, PNG)</p>
-            </div>
+            <FileUploadPreview
+              label="Dokumen Scan"
+              required
+              file={file}
+              onChange={setFile}
+            />
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={closeDialog}>Batal</Button>
