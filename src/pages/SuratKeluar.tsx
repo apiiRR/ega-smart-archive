@@ -10,7 +10,8 @@ import { Label } from "@/components/ui/label";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
-import { Eye, ArrowLeft, Upload } from "lucide-react";
+import { Eye, ArrowLeft } from "lucide-react";
+import { AttachmentInlinePreview } from "@/components/AttachmentInlinePreview";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale/id";
@@ -103,23 +104,9 @@ export default function SuratKeluar() {
           </div>
 
           {detail.file_url && (
-            <div>
-              <Button
-                variant="link"
-                className="text-sm text-primary hover:underline inline-flex items-center gap-1 p-0 h-auto"
-                onClick={async () => {
-                  const { data, error } = await supabase.storage
-                    .from("letter-attachments")
-                    .createSignedUrl(detail.file_url!, 3600);
-                  if (error || !data?.signedUrl) {
-                    toast.error("Gagal membuka dokumen");
-                    return;
-                  }
-                  window.open(data.signedUrl, "_blank");
-                }}
-              >
-                <Upload className="h-3 w-3" /> Lihat Dokumen
-              </Button>
+            <div className="space-y-2">
+              <span className="text-sm text-muted-foreground">Dokumen:</span>
+              <AttachmentInlinePreview filePath={detail.file_url} label={detail.nama_surat} />
             </div>
           )}
 
@@ -168,11 +155,11 @@ export default function SuratKeluar() {
       />
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
+        <DialogContent className="max-w-lg max-h-[90vh] flex flex-col p-0 gap-0">
+          <DialogHeader className="px-6 pt-6 pb-2 shrink-0">
             <DialogTitle>Buat Surat Keluar</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-2">
+          <div className="space-y-4 px-6 py-4 overflow-y-auto flex-1">
             <div className="space-y-2">
               <Label>Nama Surat</Label>
               <Input value={form.nama_surat} onChange={e => setForm({ ...form, nama_surat: e.target.value })} placeholder="Nama/judul surat" />
@@ -196,7 +183,7 @@ export default function SuratKeluar() {
               onChange={setFile}
             />
           </div>
-          <DialogFooter>
+          <DialogFooter className="px-6 py-4 border-t shrink-0 bg-card">
             <Button variant="outline" onClick={closeDialog}>Batal</Button>
             <Button
               onClick={() => save.mutate()}

@@ -15,6 +15,7 @@ interface FileUploadPreviewProps {
   file: File | null;
   onChange: (file: File | null) => void;
   helperText?: string;
+  previewHeightClass?: string;
 }
 
 export function FileUploadPreview({
@@ -23,6 +24,7 @@ export function FileUploadPreview({
   file,
   onChange,
   helperText = "Hanya PDF atau gambar (JPG, PNG, WEBP, GIF). Maks 20MB.",
+  previewHeightClass = "h-56",
 }: FileUploadPreviewProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
@@ -105,14 +107,14 @@ export function FileUploadPreview({
               <img
                 src={previewUrl}
                 alt={file.name}
-                className="max-h-80 w-full object-contain bg-muted"
+                className={`${previewHeightClass} w-full object-contain bg-muted`}
               />
             )}
             {isPdf && (
               <iframe
-                src={previewUrl}
+                src={`${previewUrl}#toolbar=0&navpanes=0&view=FitH`}
                 title={file.name}
-                className="w-full h-80 border-0"
+                className={`w-full ${previewHeightClass} border-0`}
               />
             )}
           </div>
