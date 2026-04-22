@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { FileUploadPreview } from "@/components/FileUploadPreview";
 
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
@@ -197,10 +198,11 @@ export default function SuratMasuk() {
               <Label>Catatan</Label>
               <Textarea value={form.catatan} onChange={e => setForm({ ...form, catatan: e.target.value })} placeholder="Catatan tambahan (opsional)" rows={3} />
             </div>
-            <div className="space-y-2">
-              <Label>Scan Surat (Opsional)</Label>
-              <Input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => setFile(e.target.files?.[0] || null)} />
-            </div>
+            <FileUploadPreview
+              label="Scan Surat (Opsional)"
+              file={file}
+              onChange={setFile}
+            />
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={closeDialog}>Batal</Button>

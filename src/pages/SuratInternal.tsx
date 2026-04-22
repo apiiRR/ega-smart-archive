@@ -16,6 +16,7 @@ import {
   Popover, PopoverContent, PopoverTrigger,
 } from "@/components/ui/popover";
 import { Eye, ArrowLeft, Upload, Loader2 } from "lucide-react";
+import { FileUploadPreview } from "@/components/FileUploadPreview";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale/id";
@@ -285,11 +286,12 @@ export default function SuratInternal() {
               <MultiSelectOrg label="Tebusan (Opsional)" selected={form.tebusan} onChange={v => setForm({ ...form, tebusan: v })} options={safeOrgUnits} />
             </div>
 
-            <div className="space-y-2">
-              <Label>Dokumen Scan <span className="text-destructive">*</span></Label>
-              <Input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => setFile(e.target.files?.[0] || null)} />
-              <p className="text-xs text-muted-foreground">Upload file scan surat (PDF, JPG, PNG)</p>
-            </div>
+            <FileUploadPreview
+              label="Dokumen Scan"
+              required
+              file={file}
+              onChange={setFile}
+            />
           </div>
 
           <DialogFooter>
