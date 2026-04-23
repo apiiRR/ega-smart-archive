@@ -74,6 +74,46 @@ export default function Disposisi() {
     },
   });
 
+  // Collect letter ids per type to fetch titles
+  const smIds = Array.from(new Set(dispositions.map(d => d.surat_masuk_id).filter(Boolean) as string[]));
+  const skIds = Array.from(new Set(dispositions.map(d => d.surat_keluar_id).filter(Boolean) as string[]));
+  const siIds = Array.from(new Set(dispositions.map(d => d.surat_internal_id).filter(Boolean) as string[]));
+
+  const { data: suratMasukMap = {} } = useQuery({
+    queryKey: ["disp-sm-titles", smIds],
+    enabled: smIds.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("surat_masuk").select("id, nama_surat, nomor_surat").in("id", smIds);
+      if (error) throw error;
+      return Object.fromEntries((data ?? []).map(r => [r.id, r]));
+    },
+  });
+  const { data: suratKeluarMap = {} } = useQuery({
+    queryKey: ["disp-sk-titles", skIds],
+    enabled: skIds.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("surat_keluar").select("id, nama_surat, nomor_surat").in("id", skIds);
+      if (error) throw error;
+      return Object.fromEntries((data ?? []).map(r => [r.id, r]));
+    },
+  });
+  const { data: suratInternalMap = {} } = useQuery({
+    queryKey: ["disp-si-titles", siIds],
+    enabled: siIds.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("surat_internal").select("id, nama_surat, nomor_surat").in("id", siIds);
+      if (error) throw error;
+      return Object.fromEntries((data ?? []).map(r => [r.id, r]));
+    },
+  });
+
+  const getLetterInfo = (d: DispositionRow): { nama: string; nomor: string } | null => {
+    if (d.surat_masuk_id && (suratMasukMap as any)[d.surat_masuk_id]) return (suratMasukMap as any)[d.surat_masuk_id];
+    if (d.surat_keluar_id && (suratKeluarMap as any)[d.surat_keluar_id]) return (suratKeluarMap as any)[d.surat_keluar_id];
+    if (d.surat_internal_id && (suratInternalMap as any)[d.surat_internal_id]) return (suratInternalMap as any)[d.surat_internal_id];
+    return null;
+  };
+
   const { data: readIds = new Set<string>() } = useQuery({
     queryKey: ["disposition-reads", user?.id],
     enabled: !!user,
