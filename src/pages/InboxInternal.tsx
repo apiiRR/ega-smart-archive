@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { DataTable } from "@/components/DataTable";
@@ -24,9 +24,35 @@ const statusLabels: Record<Status, string> = {
 };
 
 export default function InboxInternal() {
-  const { profile, roles } = useAuth();
+  const { user, profile, roles } = useAuth();
+  const qc = useQueryClient();
   const [detailId, setDetailId] = useState<string | null>(null);
   const isSuperAdmin = roles.includes("super_admin");
+
+  const { data: readIds = new Set<string>() } = useQuery({
+    queryKey: ["letter-reads-inbox", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("letter_reads")
+        .select("surat_internal_id")
+        .eq("user_id", user!.id)
+        .eq("read_type", "inbox");
+      return new Set((data ?? []).map(r => r.surat_internal_id as string));
+    },
+  });
+
+  const handleOpenDetail = async (id: string) => {
+    setDetailId(id);
+    if (user && !readIds.has(id)) {
+      await supabase.from("letter_reads").upsert(
+        { user_id: user.id, surat_internal_id: id, read_type: "inbox" },
+        { onConflict: "user_id,surat_internal_id,read_type", ignoreDuplicates: true }
+      );
+      qc.invalidateQueries({ queryKey: ["letter-reads-inbox", user.id] });
+      qc.invalidateQueries({ queryKey: ["sidebar-counts", user.id] });
+    }
+  };
 
   const { data: orgUnits = [] } = useQuery({
     queryKey: ["org-units"],
@@ -134,8 +160,9 @@ export default function InboxInternal() {
             render: (row) => format(new Date(row.created_at), "dd/MM/yyyy"),
           },
         ]}
+        rowClassName={(row) => (!readIds.has(row.id) ? "bg-primary/5 font-medium" : "")}
         actions={(row) => (
-          <Button variant="ghost" size="icon" onClick={() => setDetailId(row.id)}>
+          <Button variant="ghost" size="icon" onClick={() => handleOpenDetail(row.id)}>
             <Eye className="h-4 w-4" />
           </Button>
         )}
