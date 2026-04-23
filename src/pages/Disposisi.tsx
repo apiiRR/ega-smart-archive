@@ -54,6 +54,7 @@ export default function Disposisi() {
           { onConflict: "user_id,disposition_id", ignoreDuplicates: true }
         );
       qc.invalidateQueries({ queryKey: ["sidebar-counts", user.id] });
+      qc.invalidateQueries({ queryKey: ["disposition-reads", user.id] });
     }
   };
 
@@ -70,6 +71,18 @@ export default function Disposisi() {
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data as DispositionRow[];
+    },
+  });
+
+  const { data: readIds = new Set<string>() } = useQuery({
+    queryKey: ["disposition-reads", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("disposition_reads")
+        .select("disposition_id")
+        .eq("user_id", user!.id);
+      return new Set((data ?? []).map(r => r.disposition_id as string));
     },
   });
 
@@ -211,10 +224,12 @@ export default function Disposisi() {
         </Card>
       ) : (
         <div className="space-y-3">
-          {dispositions.map((d) => (
+          {dispositions.map((d) => {
+            const unread = !readIds.has(d.id);
+            return (
             <Card
               key={d.id}
-              className="cursor-pointer hover:border-primary/50 transition-colors"
+              className={`cursor-pointer hover:border-primary/50 transition-colors ${unread ? "border-l-4 border-l-primary bg-primary/5" : ""}`}
               onClick={() => handleOpenDisposition(d)}
             >
               <CardContent className="p-4">
