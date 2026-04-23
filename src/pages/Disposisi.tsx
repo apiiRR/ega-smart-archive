@@ -108,16 +108,7 @@ export default function Disposisi() {
     },
   });
 
-  const openDocument = async (fileUrl: string) => {
-    const { data, error } = await supabase.storage
-      .from("letter-attachments")
-      .createSignedUrl(fileUrl, 3600);
-    if (error || !data?.signedUrl) {
-      toast.error("Gagal membuka dokumen");
-      return;
-    }
-    window.open(data.signedUrl, "_blank");
-  };
+
 
   const getTypeLabel = (type: string) => {
     switch (type) {
