@@ -284,7 +284,17 @@ export default function Disposisi() {
                         {divisionMap[d.to_division_id] || "Unknown"}
                       </span>
                     </div>
-                    <p className="text-sm text-foreground whitespace-pre-wrap line-clamp-2">{d.catatan}</p>
+                    {(() => {
+                      const info = getLetterInfo(d);
+                      return info ? (
+                        <div className="text-sm font-medium text-foreground mb-1 flex items-center gap-1.5">
+                          <FileText className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                          <span className="truncate">{info.nama}</span>
+                          <span className="text-xs text-muted-foreground shrink-0">({info.nomor})</span>
+                        </div>
+                      ) : null;
+                    })()}
+                    <p className="text-sm text-muted-foreground whitespace-pre-wrap line-clamp-2">{d.catatan}</p>
                     <div className="flex gap-2 mt-2">
                       {d.surat_masuk_id && <Badge variant="secondary" className="text-xs">Surat Masuk</Badge>}
                       {d.surat_keluar_id && <Badge variant="secondary" className="text-xs">Surat Keluar</Badge>}
