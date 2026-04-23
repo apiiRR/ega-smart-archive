@@ -258,7 +258,8 @@ export default function Disposisi() {
                 </div>
               </CardContent>
             </Card>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
