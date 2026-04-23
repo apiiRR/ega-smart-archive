@@ -26,6 +26,7 @@ interface DataTableProps<T> {
   isLoading?: boolean;
   pageSize?: number;
   actions?: (row: T) => React.ReactNode;
+  rowClassName?: (row: T) => string;
 }
 
 export function DataTable<T extends Record<string, any>>({
@@ -38,6 +39,7 @@ export function DataTable<T extends Record<string, any>>({
   isLoading,
   pageSize = 10,
   actions,
+  rowClassName,
 }: DataTableProps<T>) {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -129,7 +131,7 @@ export function DataTable<T extends Record<string, any>>({
               </TableRow>
             ) : (
               paged.map((row, idx) => (
-                <TableRow key={row.id || idx}>
+                <TableRow key={row.id || idx} className={rowClassName?.(row)}>
                   <TableCell className="text-muted-foreground">{(page - 1) * pageSize + idx + 1}</TableCell>
                   {columns.map((col) => (
                     <TableCell key={col.key}>
