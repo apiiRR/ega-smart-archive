@@ -53,6 +53,8 @@ export function AppSidebar() {
     surat_keluar: counts?.surat_keluar ?? 0,
     surat_internal: counts?.surat_internal ?? 0,
     disposisi: counts?.disposisi ?? 0,
+    inbox_internal: counts?.inbox_internal ?? 0,
+    inbox_tebusan: counts?.inbox_tebusan ?? 0,
   };
 
   const renderMenuItem = (item: typeof menus[0]) => {
