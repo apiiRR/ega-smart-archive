@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Eye, ArrowLeft } from "lucide-react";
 import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale/id";
+import { AttachmentInlinePreview } from "@/components/AttachmentInlinePreview";
 import type { Enums } from "@/integrations/supabase/types";
 
 type Status = Enums<"document_status">;
@@ -98,6 +99,12 @@ export default function InboxInternal() {
             <div className="text-sm">
               <span className="text-muted-foreground">Isi Surat:</span>
               <div className="mt-1 p-3 bg-muted/30 rounded border prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: detail.isi_surat }} />
+            </div>
+          )}
+          {detail.file_url && (
+            <div className="space-y-2">
+              <span className="text-sm text-muted-foreground">Dokumen:</span>
+              <AttachmentInlinePreview filePath={detail.file_url} label={detail.nama_surat} />
             </div>
           )}
         </div>
