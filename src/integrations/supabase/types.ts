@@ -222,6 +222,38 @@ export type Database = {
           },
         ]
       }
+      letter_reads: {
+        Row: {
+          id: string
+          read_at: string
+          read_type: string
+          surat_internal_id: string | null
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          read_at?: string
+          read_type: string
+          surat_internal_id?: string | null
+          user_id: string
+        }
+        Update: {
+          id?: string
+          read_at?: string
+          read_type?: string
+          surat_internal_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "letter_reads_surat_internal_id_fkey"
+            columns: ["surat_internal_id"]
+            isOneToOne: false
+            referencedRelation: "surat_internal"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       letter_templates: {
         Row: {
           content: string
