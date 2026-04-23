@@ -5,11 +5,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import { DispositionThread } from "@/components/DispositionThread";
 import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale/id";
-import { ArrowRight, ArrowLeft, Clock, Upload, FileText } from "lucide-react";
+import { ArrowRight, ArrowLeft, Clock, FileText } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { AttachmentInlinePreview } from "@/components/AttachmentInlinePreview";
 
 interface DispositionRow {
   id: string;
@@ -183,13 +183,10 @@ export default function Disposisi() {
             )}
 
             {letterDetails.file_url && (
-              <Button
-                variant="link"
-                className="text-sm text-primary p-0 h-auto inline-flex items-center gap-1"
-                onClick={() => openDocument(letterDetails.file_url!)}
-              >
-                <Upload className="h-3 w-3" /> Lihat Dokumen
-              </Button>
+              <div className="space-y-2">
+                <span className="text-sm text-muted-foreground">Dokumen:</span>
+                <AttachmentInlinePreview filePath={letterDetails.file_url} label={letterDetails.nama_surat} />
+              </div>
             )}
           </div>
         )}
