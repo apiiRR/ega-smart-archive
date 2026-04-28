@@ -19,11 +19,11 @@ export function SuratInternalReadStatus({ suratId }: { suratId: string }) {
   const { data = [], isLoading } = useQuery({
     queryKey: ["surat-internal-read-status", suratId],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("get_surat_internal_read_status", {
+      const { data, error } = await (supabase.rpc as any)("get_surat_internal_read_status", {
         _surat_id: suratId,
       });
       if (error) throw error;
-      return (data as ReadStatusRow[]) || [];
+      return ((data as unknown) as ReadStatusRow[]) || [];
     },
   });
 

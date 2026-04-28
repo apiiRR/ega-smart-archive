@@ -17,11 +17,11 @@ export function DispositionReadStatus({ dispositionId }: { dispositionId: string
   const { data = [], isLoading } = useQuery({
     queryKey: ["disposition-read-status", dispositionId],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("get_disposition_read_status", {
+      const { data, error } = await (supabase.rpc as any)("get_disposition_read_status", {
         _disposition_id: dispositionId,
       });
       if (error) throw error;
-      return (data as ReadRow[]) || [];
+      return ((data as unknown) as ReadRow[]) || [];
     },
   });
 
