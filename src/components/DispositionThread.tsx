@@ -12,6 +12,7 @@ import { MessageSquare, Send, ArrowRight, Clock, Forward, CornerUpLeft, Users, B
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale/id";
+import { DispositionReadStatus } from "@/components/DispositionReadStatus";
 
 interface DispositionThreadProps {
   suratMasukId?: string;
@@ -244,6 +245,11 @@ export function DispositionThread({
           <Button variant="ghost" size="sm" className="text-xs h-7" onClick={() => startForward(d, "direksi")}>
             <Users className="h-3 w-3 mr-1" /> Teruskan ke Direksi
           </Button>
+        </div>
+      )}
+      {user?.id === d.from_user_id && (
+        <div className="mt-3">
+          <DispositionReadStatus dispositionId={d.id} />
         </div>
       )}
     </div>

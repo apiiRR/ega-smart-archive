@@ -18,6 +18,7 @@ import {
 import { Eye, ArrowLeft, Loader2 } from "lucide-react";
 import { FileUploadPreview } from "@/components/FileUploadPreview";
 import { AttachmentInlinePreview } from "@/components/AttachmentInlinePreview";
+import { SuratInternalReadStatus } from "@/components/SuratInternalReadStatus";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale/id";
@@ -216,6 +217,10 @@ export default function SuratInternal() {
             <p className="text-sm text-muted-foreground italic">Surat ini sudah tersimpan dan tidak dapat diubah.</p>
           </div>
         </div>
+
+        {user?.id === detail.created_by && (
+          <SuratInternalReadStatus suratId={detail.id} />
+        )}
 
         <DispositionThread suratInternalId={detail.id} />
       </div>
