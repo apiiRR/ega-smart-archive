@@ -627,6 +627,18 @@ export type Database = {
         Args: { _disposition_id: string }
         Returns: Json
       }
+      get_surat_internal_read_status: {
+        Args: { _surat_id: string }
+        Returns: {
+          division_id: string
+          division_name: string
+          first_read_at: string
+          last_read_at: string
+          read_users: number
+          recipient_type: string
+          total_users: number
+        }[]
+      }
       get_user_division_id: { Args: { _user_id: string }; Returns: string }
       has_permission: {
         Args: { _action: string; _menu_name: string; _user_id: string }
