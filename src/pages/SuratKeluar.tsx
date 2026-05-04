@@ -10,7 +10,9 @@ import { Label } from "@/components/ui/label";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
-import { Eye, ArrowLeft } from "lucide-react";
+import { Eye, ArrowLeft, Bell } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { useLetterUnreadDispositions } from "@/hooks/useLetterUnreadDispositions";
 import { AttachmentInlinePreview } from "@/components/AttachmentInlinePreview";
 import { toast } from "sonner";
 import { format } from "date-fns";
