@@ -244,8 +244,21 @@ export function DispositionThread({
     setCatatan("");
   };
 
-  const renderDisposition = (d: Disposition, isReply = false) => (
-    <div key={d.id} className={`p-4 rounded-lg border ${isReply ? "ml-8 bg-muted/30" : "bg-card"}`}>
+  const renderDisposition = (d: Disposition, isReply = false) => {
+    const isUnread = !!user && d.from_user_id !== user.id && !readSet.has(d.id);
+    return (
+    <div
+      key={d.id}
+      className={`p-4 rounded-lg border transition-colors ${
+        isReply ? "ml-8 " : ""
+      }${
+        isUnread
+          ? "bg-primary/10 border-primary/40 ring-1 ring-primary/20"
+          : isReply
+          ? "bg-muted/30"
+          : "bg-card"
+      }`}
+    >
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 text-sm mb-1 flex-wrap">
