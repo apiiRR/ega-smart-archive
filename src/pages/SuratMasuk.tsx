@@ -152,7 +152,23 @@ export default function SuratMasuk() {
         onAdd={openAdd}
         addLabel="Tambah Surat Masuk"
         columns={[
-          { key: "nomor_surat", label: "No. Surat" },
+          {
+            key: "nomor_surat",
+            label: "No. Surat",
+            render: (row) => {
+              const c = unreadMap?.get(row.id) ?? 0;
+              return (
+                <div className="flex items-center gap-2">
+                  <span>{row.nomor_surat}</span>
+                  {c > 0 && (
+                    <Badge variant="destructive" className="h-5 px-1.5 text-[10px] gap-1">
+                      <Bell className="h-3 w-3" /> {c} balasan baru
+                    </Badge>
+                  )}
+                </div>
+              );
+            },
+          },
           { key: "nama_surat", label: "Nama Surat" },
           { key: "asal_surat", label: "Asal Surat" },
           {
@@ -161,6 +177,7 @@ export default function SuratMasuk() {
             render: (row) => format(new Date(row.created_at), "dd/MM/yyyy"),
           },
         ]}
+        rowClassName={(row) => ((unreadMap?.get(row.id) ?? 0) > 0 ? "bg-primary/5 font-medium" : "")}
         actions={(row) => (
           <Button variant="ghost" size="icon" onClick={() => setDetailId(row.id)}>
             <Eye className="h-4 w-4" />
