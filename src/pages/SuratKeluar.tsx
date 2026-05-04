@@ -44,6 +44,9 @@ export default function SuratKeluar() {
     },
   });
 
+  const ownIds = data.filter(s => s.created_by === user?.id).map(s => s.id);
+  const { data: unreadMap } = useLetterUnreadDispositions("surat_keluar", ownIds);
+
   const detail = data.find(s => s.id === detailId);
 
   const save = useMutation({
