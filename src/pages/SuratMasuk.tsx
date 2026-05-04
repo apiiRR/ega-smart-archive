@@ -9,11 +9,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { FileUploadPreview } from "@/components/FileUploadPreview";
+import { Badge } from "@/components/ui/badge";
+import { useLetterUnreadDispositions } from "@/hooks/useLetterUnreadDispositions";
 
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
-import { Eye, Plus, ArrowLeft } from "lucide-react";
+import { Eye, Plus, ArrowLeft, Bell } from "lucide-react";
 import { AttachmentInlinePreview } from "@/components/AttachmentInlinePreview";
 import { toast } from "sonner";
 import { format } from "date-fns";
