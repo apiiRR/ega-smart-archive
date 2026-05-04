@@ -111,6 +111,37 @@ export function DispositionThread({
     },
   });
 
+  // Read tracking
+  const { data: readSet = new Set<string>() } = useQuery({
+    queryKey: ["disp-reads-thread", user?.id, suratMasukId, suratKeluarId, suratInternalId],
+    enabled: !!user && dispositions.length > 0,
+    queryFn: async () => {
+      const ids = dispositions.map(d => d.id);
+      const { data } = await supabase
+        .from("disposition_reads")
+        .select("disposition_id")
+        .eq("user_id", user!.id)
+        .in("disposition_id", ids);
+      return new Set((data ?? []).map(r => r.disposition_id));
+    },
+  });
+
+  // Auto-mark as read upon viewing
+  useEffect(() => {
+    if (!user || dispositions.length === 0) return;
+    const toMark = dispositions.filter(d => d.from_user_id !== user.id && !readSet.has(d.id));
+    if (toMark.length === 0) return;
+    (async () => {
+      await supabase.from("disposition_reads").upsert(
+        toMark.map(d => ({ user_id: user.id, disposition_id: d.id })),
+        { onConflict: "user_id,disposition_id", ignoreDuplicates: true }
+      );
+      qc.invalidateQueries({ queryKey: ["disp-reads-thread"] });
+      qc.invalidateQueries({ queryKey: ["letter-unread-disp"] });
+      qc.invalidateQueries({ queryKey: ["sidebar-counts", user.id] });
+    })();
+  }, [dispositions, readSet, user, qc, suratMasukId, suratKeluarId, suratInternalId]);
+
   const resetForm = () => {
     setCatatan("");
     setToDivisionId("");
