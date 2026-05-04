@@ -120,6 +120,8 @@ export default function SuratInternal() {
 
   const safeOrgUnits = Array.isArray(orgUnits) ? orgUnits : [];
   const orgMap = Object.fromEntries(safeOrgUnits.map(o => [o.id, o.name]));
+  const ownIds = items.filter(s => s.created_by === user?.id).map(s => s.id);
+  const { data: unreadMap } = useLetterUnreadDispositions("surat_internal", ownIds);
   const detail = items.find(s => s.id === detailId);
 
   const save = useMutation({
