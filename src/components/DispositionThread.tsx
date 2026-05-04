@@ -297,7 +297,8 @@ export function DispositionThread({
         </div>
       )}
     </div>
-  );
+    );
+  };
 
   // Form ditampilkan jika: pembuat surat (compose root), atau sedang reply/forward
   const isCreator = letterCreatorUserId && user?.id === letterCreatorUserId;
