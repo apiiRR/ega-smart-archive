@@ -15,7 +15,8 @@ import {
 import {
   Popover, PopoverContent, PopoverTrigger,
 } from "@/components/ui/popover";
-import { Eye, ArrowLeft, Loader2 } from "lucide-react";
+import { Eye, ArrowLeft, Loader2, Bell } from "lucide-react";
+import { useLetterUnreadDispositions } from "@/hooks/useLetterUnreadDispositions";
 import { FileUploadPreview } from "@/components/FileUploadPreview";
 import { AttachmentInlinePreview } from "@/components/AttachmentInlinePreview";
 import { SuratInternalReadStatus } from "@/components/SuratInternalReadStatus";
@@ -119,6 +120,8 @@ export default function SuratInternal() {
 
   const safeOrgUnits = Array.isArray(orgUnits) ? orgUnits : [];
   const orgMap = Object.fromEntries(safeOrgUnits.map(o => [o.id, o.name]));
+  const ownIds = items.filter(s => s.created_by === user?.id).map(s => s.id);
+  const { data: unreadMap } = useLetterUnreadDispositions("surat_internal", ownIds);
   const detail = items.find(s => s.id === detailId);
 
   const save = useMutation({
@@ -242,7 +245,23 @@ export default function SuratInternal() {
         onAdd={openAdd}
         addLabel="Buat Surat Internal"
         columns={[
-          { key: "nomor_surat", label: "No. Surat" },
+          {
+            key: "nomor_surat",
+            label: "No. Surat",
+            render: (row) => {
+              const c = unreadMap?.get(row.id) ?? 0;
+              return (
+                <div className="flex items-center gap-2">
+                  <span>{row.nomor_surat}</span>
+                  {c > 0 && (
+                    <Badge variant="destructive" className="h-5 px-1.5 text-[10px] gap-1">
+                      <Bell className="h-3 w-3" /> {c} balasan baru
+                    </Badge>
+                  )}
+                </div>
+              );
+            },
+          },
           { key: "nama_surat", label: "Nama Surat" },
           { key: "perihal", label: "Perihal" },
           {
@@ -251,6 +270,7 @@ export default function SuratInternal() {
             render: (row) => format(new Date(row.created_at), "dd/MM/yyyy"),
           },
         ]}
+        rowClassName={(row) => ((unreadMap?.get(row.id) ?? 0) > 0 ? "bg-primary/5 font-medium" : "")}
         actions={(row) => (
           <Button variant="ghost" size="icon" onClick={() => setDetailId(row.id)}>
             <Eye className="h-4 w-4" />

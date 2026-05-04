@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -111,6 +111,37 @@ export function DispositionThread({
     },
   });
 
+  // Read tracking
+  const { data: readSet = new Set<string>() } = useQuery({
+    queryKey: ["disp-reads-thread", user?.id, suratMasukId, suratKeluarId, suratInternalId],
+    enabled: !!user && dispositions.length > 0,
+    queryFn: async () => {
+      const ids = dispositions.map(d => d.id);
+      const { data } = await supabase
+        .from("disposition_reads")
+        .select("disposition_id")
+        .eq("user_id", user!.id)
+        .in("disposition_id", ids);
+      return new Set((data ?? []).map(r => r.disposition_id));
+    },
+  });
+
+  // Auto-mark as read upon viewing
+  useEffect(() => {
+    if (!user || dispositions.length === 0) return;
+    const toMark = dispositions.filter(d => d.from_user_id !== user.id && !readSet.has(d.id));
+    if (toMark.length === 0) return;
+    (async () => {
+      await supabase.from("disposition_reads").upsert(
+        toMark.map(d => ({ user_id: user.id, disposition_id: d.id })),
+        { onConflict: "user_id,disposition_id", ignoreDuplicates: true }
+      );
+      qc.invalidateQueries({ queryKey: ["disp-reads-thread"] });
+      qc.invalidateQueries({ queryKey: ["letter-unread-disp"] });
+      qc.invalidateQueries({ queryKey: ["sidebar-counts", user.id] });
+    })();
+  }, [dispositions, readSet, user, qc, suratMasukId, suratKeluarId, suratInternalId]);
+
   const resetForm = () => {
     setCatatan("");
     setToDivisionId("");
@@ -213,8 +244,21 @@ export function DispositionThread({
     setCatatan("");
   };
 
-  const renderDisposition = (d: Disposition, isReply = false) => (
-    <div key={d.id} className={`p-4 rounded-lg border ${isReply ? "ml-8 bg-muted/30" : "bg-card"}`}>
+  const renderDisposition = (d: Disposition, isReply = false) => {
+    const isUnread = !!user && d.from_user_id !== user.id && !readSet.has(d.id);
+    return (
+    <div
+      key={d.id}
+      className={`p-4 rounded-lg border transition-colors ${
+        isReply ? "ml-8 " : ""
+      }${
+        isUnread
+          ? "bg-primary/10 border-primary/40 ring-1 ring-primary/20"
+          : isReply
+          ? "bg-muted/30"
+          : "bg-card"
+      }`}
+    >
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 text-sm mb-1 flex-wrap">
@@ -253,7 +297,8 @@ export function DispositionThread({
         </div>
       )}
     </div>
-  );
+    );
+  };
 
   // Form ditampilkan jika: pembuat surat (compose root), atau sedang reply/forward
   const isCreator = letterCreatorUserId && user?.id === letterCreatorUserId;
