@@ -1,4 +1,4 @@
-import { Building2, LayoutDashboard, Inbox, Send, ArrowRightLeft, FileText, Users, UserCog, Shield, ScrollText, LogOut } from "lucide-react";
+import { Building2, LayoutDashboard, Inbox, Send, ArrowRightLeft, FileText, FileType, Users, UserCog, Shield, ScrollText, LogOut, Archive } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMenuPermissions } from "@/hooks/useMenuPermissions";
@@ -24,11 +24,13 @@ const iconMap: Record<string, React.ComponentType<any>> = {
   Send,
   ArrowRightLeft,
   FileText,
+  FileType,
   Building2,
   Users,
   UserCog,
   Shield,
   ScrollText,
+  Archive,
 };
 
 export function AppSidebar() {
@@ -38,7 +40,7 @@ export function AppSidebar() {
 
   const buatSuratNames = ["surat_masuk", "surat_keluar", "surat_internal"];
   const kotakMasukNames = ["inbox_internal", "inbox_tebusan", "disposisi"];
-  const masterNames = ["master_direktorat", "master_divisi", "master_user"];
+  const masterNames = ["master_direktorat", "master_divisi", "master_user", "master_jenis_surat"];
   const settingNames = ["rbac", "audit_log"];
   const dashboardMenus = menus.filter(m => m.menu_name === "dashboard");
   const buatSuratMenus = menus.filter(m => buatSuratNames.includes(m.menu_name));
