@@ -307,9 +307,24 @@ export default function SuratInternal() {
                 <Input value={form.nomor_surat} onChange={e => setForm({ ...form, nomor_surat: e.target.value })} placeholder="No. surat" />
               </div>
             </div>
-            <div className="space-y-2">
-              <Label>Perihal</Label>
-              <Input value={form.perihal} onChange={e => setForm({ ...form, perihal: e.target.value })} placeholder="Perihal surat" />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Perihal</Label>
+                <Input value={form.perihal} onChange={e => setForm({ ...form, perihal: e.target.value })} placeholder="Perihal surat" />
+              </div>
+              <div className="space-y-2">
+                <Label>Jenis Surat</Label>
+                <select
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  value={form.jenis_surat_id}
+                  onChange={e => setForm({ ...form, jenis_surat_id: e.target.value })}
+                >
+                  <option value="">Pilih jenis surat...</option>
+                  {letterTypes.map((t: any) => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -327,7 +342,7 @@ export default function SuratInternal() {
 
           <DialogFooter className="px-6 py-4 border-t shrink-0 bg-card">
             <Button variant="outline" onClick={closeDialog}>Batal</Button>
-            <Button onClick={() => save.mutate()} disabled={!form.nama_surat || !form.nomor_surat || !form.perihal || form.tujuan.length === 0 || !file || save.isPending}>
+            <Button onClick={() => save.mutate()} disabled={!form.nama_surat || !form.nomor_surat || !form.perihal || !form.jenis_surat_id || form.tujuan.length === 0 || !file || save.isPending}>
               {save.isPending && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
               Simpan Surat
             </Button>
