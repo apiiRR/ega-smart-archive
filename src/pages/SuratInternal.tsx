@@ -139,6 +139,7 @@ export default function SuratInternal() {
       if (!user) throw new Error("Not authenticated");
       if (!form.nomor_surat || !form.nama_surat || !form.perihal) throw new Error("Field wajib belum diisi");
       if (form.tujuan.length === 0) throw new Error("Tujuan wajib dipilih");
+      if (!form.jenis_surat_id) throw new Error("Jenis surat wajib dipilih");
       if (!file) throw new Error("Dokumen scan wajib diunggah");
 
       const ext = file.name.split(".").pop();
@@ -150,6 +151,7 @@ export default function SuratInternal() {
         nomor_surat: form.nomor_surat,
         nama_surat: form.nama_surat,
         perihal: form.perihal,
+        jenis_surat_id: form.jenis_surat_id,
         tujuan: form.tujuan,
         tebusan: form.tebusan,
         file_url: path,
@@ -167,7 +169,7 @@ export default function SuratInternal() {
   });
 
   const openAdd = () => {
-    setForm({ nama_surat: "", nomor_surat: "", perihal: "", tujuan: [], tebusan: [] });
+    setForm({ nama_surat: "", nomor_surat: "", perihal: "", jenis_surat_id: "", tujuan: [], tebusan: [] });
     setFile(null);
     setDialogOpen(true);
   };
