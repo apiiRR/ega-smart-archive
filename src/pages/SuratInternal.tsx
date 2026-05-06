@@ -215,6 +215,12 @@ export default function SuratInternal() {
                 </div>
               </div>
             )}
+            {(detail as any).jenis_surat_id && (
+              <div>
+                <span className="text-muted-foreground">Jenis Surat:</span>
+                <p className="font-medium">{letterTypes.find((t: any) => t.id === (detail as any).jenis_surat_id)?.name || "-"}</p>
+              </div>
+            )}
             <div>
               <span className="text-muted-foreground">Tanggal:</span>
               <p className="font-medium">{format(new Date(detail.created_at), "dd MMMM yyyy", { locale: idLocale })}</p>
