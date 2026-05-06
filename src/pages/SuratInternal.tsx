@@ -89,6 +89,7 @@ export default function SuratInternal() {
   const [file, setFile] = useState<File | null>(null);
   const [form, setForm] = useState({
     nama_surat: "", nomor_surat: "", perihal: "",
+    jenis_surat_id: "",
     tujuan: [] as string[], tebusan: [] as string[],
   });
 
@@ -99,6 +100,15 @@ export default function SuratInternal() {
         .from("surat_internal")
         .select("*")
         .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: letterTypes = [] } = useQuery({
+    queryKey: ["letter_types"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("letter_types").select("id, name").order("name");
       if (error) throw error;
       return data;
     },
@@ -129,6 +139,7 @@ export default function SuratInternal() {
       if (!user) throw new Error("Not authenticated");
       if (!form.nomor_surat || !form.nama_surat || !form.perihal) throw new Error("Field wajib belum diisi");
       if (form.tujuan.length === 0) throw new Error("Tujuan wajib dipilih");
+      if (!form.jenis_surat_id) throw new Error("Jenis surat wajib dipilih");
       if (!file) throw new Error("Dokumen scan wajib diunggah");
 
       const ext = file.name.split(".").pop();
@@ -140,6 +151,7 @@ export default function SuratInternal() {
         nomor_surat: form.nomor_surat,
         nama_surat: form.nama_surat,
         perihal: form.perihal,
+        jenis_surat_id: form.jenis_surat_id,
         tujuan: form.tujuan,
         tebusan: form.tebusan,
         file_url: path,
@@ -157,7 +169,7 @@ export default function SuratInternal() {
   });
 
   const openAdd = () => {
-    setForm({ nama_surat: "", nomor_surat: "", perihal: "", tujuan: [], tebusan: [] });
+    setForm({ nama_surat: "", nomor_surat: "", perihal: "", jenis_surat_id: "", tujuan: [], tebusan: [] });
     setFile(null);
     setDialogOpen(true);
   };
@@ -201,6 +213,12 @@ export default function SuratInternal() {
                     <Badge key={id} variant="outline" className="text-xs">{orgMap[id] || id}</Badge>
                   ))}
                 </div>
+              </div>
+            )}
+            {(detail as any).jenis_surat_id && (
+              <div>
+                <span className="text-muted-foreground">Jenis Surat:</span>
+                <p className="font-medium">{letterTypes.find((t: any) => t.id === (detail as any).jenis_surat_id)?.name || "-"}</p>
               </div>
             )}
             <div>
@@ -295,9 +313,24 @@ export default function SuratInternal() {
                 <Input value={form.nomor_surat} onChange={e => setForm({ ...form, nomor_surat: e.target.value })} placeholder="No. surat" />
               </div>
             </div>
-            <div className="space-y-2">
-              <Label>Perihal</Label>
-              <Input value={form.perihal} onChange={e => setForm({ ...form, perihal: e.target.value })} placeholder="Perihal surat" />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Perihal</Label>
+                <Input value={form.perihal} onChange={e => setForm({ ...form, perihal: e.target.value })} placeholder="Perihal surat" />
+              </div>
+              <div className="space-y-2">
+                <Label>Jenis Surat</Label>
+                <select
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  value={form.jenis_surat_id}
+                  onChange={e => setForm({ ...form, jenis_surat_id: e.target.value })}
+                >
+                  <option value="">Pilih jenis surat...</option>
+                  {letterTypes.map((t: any) => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -315,7 +348,7 @@ export default function SuratInternal() {
 
           <DialogFooter className="px-6 py-4 border-t shrink-0 bg-card">
             <Button variant="outline" onClick={closeDialog}>Batal</Button>
-            <Button onClick={() => save.mutate()} disabled={!form.nama_surat || !form.nomor_surat || !form.perihal || form.tujuan.length === 0 || !file || save.isPending}>
+            <Button onClick={() => save.mutate()} disabled={!form.nama_surat || !form.nomor_surat || !form.perihal || !form.jenis_surat_id || form.tujuan.length === 0 || !file || save.isPending}>
               {save.isPending && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
               Simpan Surat
             </Button>

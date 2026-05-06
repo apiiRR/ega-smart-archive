@@ -284,6 +284,30 @@ export type Database = {
         }
         Relationships: []
       }
+      letter_types: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       menus: {
         Row: {
           created_at: string
@@ -455,6 +479,7 @@ export type Database = {
           file_url: string | null
           id: string
           isi_surat: string | null
+          jenis_surat_id: string | null
           nama_surat: string
           nomor_surat: string
           perihal: string
@@ -470,6 +495,7 @@ export type Database = {
           file_url?: string | null
           id?: string
           isi_surat?: string | null
+          jenis_surat_id?: string | null
           nama_surat: string
           nomor_surat: string
           perihal: string
@@ -485,6 +511,7 @@ export type Database = {
           file_url?: string | null
           id?: string
           isi_surat?: string | null
+          jenis_surat_id?: string | null
           nama_surat?: string
           nomor_surat?: string
           perihal?: string
@@ -495,6 +522,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "surat_internal_jenis_surat_id_fkey"
+            columns: ["jenis_surat_id"]
+            isOneToOne: false
+            referencedRelation: "letter_types"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "surat_internal_template_id_fkey"
             columns: ["template_id"]

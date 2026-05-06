@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import MasterDirectorates from "./pages/MasterDirectorates";
 import MasterDivisions from "./pages/MasterDivisions";
 import MasterUsers from "./pages/MasterUsers";
+import MasterLetterTypes from "./pages/MasterLetterTypes";
 import SuratMasuk from "./pages/SuratMasuk";
 import SuratKeluar from "./pages/SuratKeluar";
 import SuratInternal from "./pages/SuratInternal";
@@ -38,6 +39,7 @@ const App = () => (
               <Route path="master/directorates" element={<MasterDirectorates />} />
               <Route path="master/divisions" element={<MasterDivisions />} />
               <Route path="master/users" element={<MasterUsers />} />
+              <Route path="master/letter-types" element={<MasterLetterTypes />} />
               <Route path="surat-masuk" element={<SuratMasuk />} />
               <Route path="surat-keluar" element={<SuratKeluar />} />
               <Route path="surat-internal" element={<SuratInternal />} />
