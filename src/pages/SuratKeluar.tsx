@@ -1,30 +1,47 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { DataTable } from "@/components/DataTable";
-import { DispositionThread } from "@/components/DispositionThread";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
-import { Eye, ArrowLeft, Bell } from "lucide-react";
+import { Eye, ArrowLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { useLetterUnreadDispositions } from "@/hooks/useLetterUnreadDispositions";
 import { AttachmentInlinePreview } from "@/components/AttachmentInlinePreview";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale/id";
-import type { Tables } from "@/integrations/supabase/types";
 import { FileUploadPreview } from "@/components/FileUploadPreview";
 
-type SuratKeluarRow = Tables<"surat_keluar">;
+type ArsipKind = "arsip" | "masuk" | "internal";
+
+interface ArsipRow {
+  id: string;
+  kind: ArsipKind;
+  nomor_surat: string;
+  nama_surat: string;
+  perihal: string;
+  created_at: string;
+  file_url: string | null;
+  // raw refs
+  source: any;
+}
+
+const kindMeta: Record<ArsipKind, { label: string; className: string }> = {
+  arsip: { label: "Arsip Surat", className: "bg-amber-100 text-amber-900 hover:bg-amber-100 dark:bg-amber-900/30 dark:text-amber-200" },
+  masuk: { label: "Surat Masuk", className: "bg-blue-100 text-blue-900 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-200" },
+  internal: { label: "Surat Internal", className: "bg-emerald-100 text-emerald-900 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-200" },
+};
 
 export default function SuratKeluar() {
   const { user } = useAuth();
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [detailId, setDetailId] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
@@ -32,22 +49,55 @@ export default function SuratKeluar() {
     nama_surat: "", nomor_surat: "", perihal: "", tujuan: "",
   });
 
-  const { data = [], isLoading } = useQuery({
+  const { data: arsipData = [], isLoading: l1 } = useQuery({
     queryKey: ["surat_keluar"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("surat_keluar")
-        .select("*")
-        .order("created_at", { ascending: false });
+      const { data, error } = await supabase.from("surat_keluar").select("*").order("created_at", { ascending: false });
       if (error) throw error;
-      return data as SuratKeluarRow[];
+      return data;
+    },
+  });
+  const { data: masukData = [], isLoading: l2 } = useQuery({
+    queryKey: ["surat_masuk_all"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("surat_masuk").select("*").order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+  const { data: internalData = [], isLoading: l3 } = useQuery({
+    queryKey: ["surat_internal_all"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("surat_internal").select("*").order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
     },
   });
 
-  const ownIds = data.filter(s => s.created_by === user?.id).map(s => s.id);
-  const { data: unreadMap } = useLetterUnreadDispositions("surat_keluar", ownIds);
+  const isLoading = l1 || l2 || l3;
 
-  const detail = data.find(s => s.id === detailId);
+  const rows: ArsipRow[] = useMemo(() => {
+    const list: ArsipRow[] = [
+      ...arsipData.map((s: any) => ({
+        id: s.id, kind: "arsip" as const, nomor_surat: s.nomor_surat,
+        nama_surat: s.nama_surat, perihal: s.perihal, created_at: s.created_at,
+        file_url: s.file_url, source: s,
+      })),
+      ...masukData.map((s: any) => ({
+        id: s.id, kind: "masuk" as const, nomor_surat: s.nomor_surat,
+        nama_surat: s.nama_surat, perihal: s.asal_surat, created_at: s.created_at,
+        file_url: s.file_url, source: s,
+      })),
+      ...internalData.map((s: any) => ({
+        id: s.id, kind: "internal" as const, nomor_surat: s.nomor_surat,
+        nama_surat: s.nama_surat, perihal: s.perihal, created_at: s.created_at,
+        file_url: s.file_url, source: s,
+      })),
+    ];
+    return list.sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
+  }, [arsipData, masukData, internalData]);
+
+  const detail = arsipData.find((s: any) => s.id === detailId);
 
   const save = useMutation({
     mutationFn: async () => {
@@ -67,7 +117,7 @@ export default function SuratKeluar() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["surat_keluar"] });
-      toast.success("Surat keluar berhasil ditambahkan");
+      toast.success("Arsip surat berhasil ditambahkan");
       closeDialog();
     },
     onError: (e: any) => toast.error(e.message),
@@ -80,6 +130,16 @@ export default function SuratKeluar() {
   };
   const closeDialog = () => { setDialogOpen(false); setFile(null); };
 
+  const openRow = (row: ArsipRow) => {
+    if (row.kind === "arsip") {
+      setDetailId(row.id);
+    } else if (row.kind === "masuk") {
+      navigate("/surat-masuk");
+    } else {
+      navigate("/surat-internal");
+    }
+  };
+
   if (detailId && detail) {
     return (
       <div className="space-y-6">
@@ -88,6 +148,9 @@ export default function SuratKeluar() {
         </Button>
 
         <div className="bg-card border rounded-lg p-6 space-y-4">
+          <div className="flex items-center gap-2">
+            <Badge className={kindMeta.arsip.className}>{kindMeta.arsip.label}</Badge>
+          </div>
           <div>
             <h2 className="text-xl font-bold text-foreground">{detail.nama_surat}</h2>
             <p className="text-sm text-muted-foreground">No: {detail.nomor_surat}</p>
@@ -121,8 +184,6 @@ export default function SuratKeluar() {
             </p>
           </div>
         </div>
-
-        <DispositionThread suratKeluarId={detail.id} />
       </div>
     );
   }
@@ -130,47 +191,40 @@ export default function SuratKeluar() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Surat Keluar</h1>
-        <p className="text-muted-foreground mt-1">Kelola surat keluar dan workflow persetujuan.</p>
+        <h1 className="text-2xl font-bold text-foreground">Arsip Surat</h1>
+        <p className="text-muted-foreground mt-1">
+          Daftar arsip surat, surat masuk, dan surat internal dalam satu tampilan.
+        </p>
       </div>
 
       <DataTable
-        data={data}
+        data={rows}
         isLoading={isLoading}
-        searchPlaceholder="Cari surat keluar..."
-        searchKeys={["nama_surat", "nomor_surat", "perihal", "tujuan"]}
+        searchPlaceholder="Cari arsip surat..."
+        searchKeys={["nama_surat", "nomor_surat", "perihal"]}
         onAdd={openAdd}
-        addLabel="Buat Surat Keluar"
+        addLabel="Tambah Arsip Surat"
         columns={[
           {
-            key: "nomor_surat",
-            label: "No. Surat",
-            render: (row) => {
-              const c = unreadMap?.get(row.id) ?? 0;
-              return (
-                <div className="flex items-center gap-2">
-                  <span>{row.nomor_surat}</span>
-                  {c > 0 && (
-                    <Badge variant="destructive" className="h-5 px-1.5 text-[10px] gap-1">
-                      <Bell className="h-3 w-3" /> {c} balasan baru
-                    </Badge>
-                  )}
-                </div>
-              );
-            },
+            key: "kind",
+            label: "Jenis",
+            render: (row) => (
+              <Badge variant="secondary" className={kindMeta[row.kind].className}>
+                {kindMeta[row.kind].label}
+              </Badge>
+            ),
           },
+          { key: "nomor_surat", label: "No. Surat" },
           { key: "nama_surat", label: "Nama Surat" },
-          { key: "tujuan", label: "Tujuan" },
-          { key: "perihal", label: "Perihal" },
+          { key: "perihal", label: "Perihal/Asal" },
           {
             key: "created_at",
             label: "Tanggal",
             render: (row) => format(new Date(row.created_at), "dd/MM/yyyy"),
           },
         ]}
-        rowClassName={(row) => ((unreadMap?.get(row.id) ?? 0) > 0 ? "bg-primary/5 font-medium" : "")}
         actions={(row) => (
-          <Button variant="ghost" size="icon" onClick={() => setDetailId(row.id)}>
+          <Button variant="ghost" size="icon" onClick={() => openRow(row)} title={row.kind === "arsip" ? "Lihat detail" : "Buka di menu asli"}>
             <Eye className="h-4 w-4" />
           </Button>
         )}
@@ -179,7 +233,7 @@ export default function SuratKeluar() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-lg max-h-[90vh] flex flex-col p-0 gap-0">
           <DialogHeader className="px-6 pt-6 pb-2 shrink-0">
-            <DialogTitle>Buat Surat Keluar</DialogTitle>
+            <DialogTitle>Tambah Arsip Surat</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 px-6 py-4 overflow-y-auto flex-1">
             <div className="space-y-2">
@@ -211,7 +265,7 @@ export default function SuratKeluar() {
               onClick={() => save.mutate()}
               disabled={!form.nama_surat || !form.nomor_surat || !form.perihal || !form.tujuan || !file || save.isPending}
             >
-              {save.isPending ? "Menyimpan..." : "Simpan Surat"}
+              {save.isPending ? "Menyimpan..." : "Simpan Arsip"}
             </Button>
           </DialogFooter>
         </DialogContent>
