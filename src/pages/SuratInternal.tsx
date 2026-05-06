@@ -89,6 +89,7 @@ export default function SuratInternal() {
   const [file, setFile] = useState<File | null>(null);
   const [form, setForm] = useState({
     nama_surat: "", nomor_surat: "", perihal: "",
+    jenis_surat_id: "",
     tujuan: [] as string[], tebusan: [] as string[],
   });
 
@@ -99,6 +100,15 @@ export default function SuratInternal() {
         .from("surat_internal")
         .select("*")
         .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: letterTypes = [] } = useQuery({
+    queryKey: ["letter_types"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("letter_types").select("id, name").order("name");
       if (error) throw error;
       return data;
     },
